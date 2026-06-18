@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register Surat | Desa Motabang</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/register-surat.css">
+</head>
+<body>
+  <div class="wrapper">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <div class="brand-logo">
+            <img src="assets/logodesa.png" alt="Logo Desa Motabang">
+          </div>
+          <div class="brand-copy">
+            <p class="eyebrow">Administrasi Surat</p>
+            <h1>Register Surat Desa Motabang</h1>
+            <p>Kelola pencatatan surat masuk dan keluar dengan format yang lebih rapi dan modern.</p>
+          </div>
+        </div>
+
+        <div class="topbar-actions">
+          <button class="btn btn-secondary" type="button" onclick="history.back()">Kembali</button>
+          <button class="btn btn-danger" type="button" onclick="logout()">Logout</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="stats-grid">
+        <article class="stat-card">
+          <span class="stat-label">Total Surat</span>
+          <strong class="stat-value" id="totalSurat">0</strong>
+          <span class="stat-note">Seluruh data register</span>
+        </article>
+
+        <article class="stat-card">
+          <span class="stat-label">Bulan Ini</span>
+          <strong class="stat-value" id="bulanIni">0</strong>
+          <span class="stat-note">Register pada bulan berjalan</span>
+        </article>
+
+        <article class="stat-card">
+          <span class="stat-label">Nomor Terakhir</span>
+          <strong class="stat-value stat-value-small" id="nomorTerakhir">-</strong>
+          <span class="stat-note">Nomor surat terbaru</span>
+        </article>
+      </section>
+
+      <section class="panel-grid">
+        <article class="panel-card form-panel">
+          <div class="panel-head">
+            <p class="panel-kicker">Input Data</p>
+            <h2>Tambah Register Surat</h2>
+            <p>Isi data surat untuk membuat nomor register secara otomatis.</p>
+          </div>
+
+          <form id="formRegister" onsubmit="simpanRegister(event)">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="jenisSurat">Jenis Surat <span class="required">*</span></label>
+                <select id="jenisSurat" required>
+                  <option value="">Pilih jenis surat</option>
+                  <option value="SKTM">SKTM</option>
+                  <option value="SKU">SKU</option>
+                  <option value="SKD">SKD</option>
+                  <option value="SKCK">SKCK</option>
+                  <option value="DOM">Domisili</option>
+                  <option value="KET">Keterangan</option>
+                  <option value="UND">Undangan</option>
+                  <option value="LAIN">Lainnya</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="tanggalSurat">Tanggal Surat <span class="required">*</span></label>
+                <input type="date" id="tanggalSurat" required>
+              </div>
+
+              <div class="form-group form-group-full">
+                <label for="perihal">Perihal <span class="required">*</span></label>
+                <input type="text" id="perihal" placeholder="Contoh: Permohonan surat keterangan" required>
+              </div>
+
+              <div class="form-group form-group-full">
+                <label for="bersangkutan">Nama / Pihak Bersangkutan <span class="required">*</span></label>
+                <input type="text" id="bersangkutan" placeholder="Masukkan nama yang berkaitan dengan surat" required>
+              </div>
+            </div>
+
+            <div class="preview-box">
+              <div class="preview-copy">
+                <span class="preview-label">Preview Nomor Surat</span>
+                <strong class="preview-value" id="previewNomor">Pilih jenis surat dan tanggal untuk melihat preview</strong>
+                <span class="preview-note">Nomor final dibuat otomatis saat data disimpan.</span>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-ghost" onclick="resetForm()">Reset</button>
+              <button type="submit" class="btn btn-primary" id="btnSimpan">Simpan Register</button>
+            </div>
+          </form>
+        </article>
+
+        <article class="panel-card side-panel">
+          <div class="panel-head">
+            <p class="panel-kicker">Pencarian</p>
+            <h2>Filter Register</h2>
+            <p>Gunakan filter untuk mencari data surat lebih cepat.</p>
+          </div>
+
+          <div class="filter-stack">
+            <div class="form-group">
+              <label for="filterTahun">Tahun</label>
+              <select id="filterTahun" onchange="handleFilter()"></select>
+            </div>
+
+            <div class="form-group">
+              <label for="searchSurat">Cari Surat</label>
+              <input type="text" id="searchSurat" placeholder="Cari nomor, perihal, atau nama..." oninput="handleSearch()">
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="panel-card table-panel">
+        <div class="table-top">
+          <div>
+            <p class="panel-kicker">Data Register</p>
+            <h2>Daftar Surat</h2>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Nomor Surat</th>
+                <th>Tanggal</th>
+                <th>Jenis</th>
+                <th>Perihal</th>
+                <th>Bersangkutan</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tabelRegister">
+              <tr>
+                <td colspan="7" class="table-state">Memuat data...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination">
+          <button class="btn-page" id="prevBtn" onclick="changePage(-1)">Sebelumnya</button>
+          <div class="page-info" id="pageInfo">Halaman 1 dari 1</div>
+          <button class="btn-page" id="nextBtn" onclick="changePage(1)">Berikutnya</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal" id="editModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Edit Register Surat</h3>
+        <button type="button" class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="editForm">
+          <input type="hidden" id="editId">
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="editNomorSurat">Nomor Surat</label>
+              <input type="text" id="editNomorSurat" class="input-disabled" readonly>
+            </div>
+
+            <div class="form-group">
+              <label for="editTanggalSurat">Tanggal Surat</label>
+              <input type="date" id="editTanggalSurat">
+            </div>
+
+            <div class="form-group">
+              <label for="editJenisSurat">Jenis Surat</label>
+              <select id="editJenisSurat">
+                <option value="SKTM">SKTM</option>
+                <option value="SKU">SKU</option>
+                <option value="SKD">SKD</option>
+                <option value="SKCK">SKCK</option>
+                <option value="DOM">Domisili</option>
+                <option value="KET">Keterangan</option>
+                <option value="UND">Undangan</option>
+                <option value="LAIN">Lainnya</option>
+              </select>
+            </div>
+
+            <div class="form-group form-group-full">
+              <label for="editPerihal">Perihal</label>
+              <input type="text" id="editPerihal">
+            </div>
+
+            <div class="form-group form-group-full">
+              <label for="editBersangkutan">Nama / Pihak Bersangkutan</label>
+              <input type="text" id="editBersangkutan">
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-ghost" onclick="closeModal()">Batal</button>
+            <button type="button" class="btn btn-primary" onclick="updateRegister()">Simpan Perubahan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="notification" class="notification">
+    <div id="notificationMessage"></div>
+  </div>
+
+  <script src="js/register-surat.js"></script>
+</body>
+</html>

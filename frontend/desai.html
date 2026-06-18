@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DesAi – Asisten Desa</title>
+  <link rel="stylesheet" href="css/desai.css"/>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ══════════════════════════════
+       SIDEBAR
+  ══════════════════════════════ -->
+  <aside class="sidebar" id="sidebar">
+
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <img class="brand-logo" src="assets/desai.png" alt="DesAi"
+             onerror="this.outerHTML='<div class=\'brand-logo-fallback\'>🏡</div>'"/>
+        <span class="brand-name">DesAi</span>
+      </div>
+      <button class="btn-new-chat" onclick="newChat()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Chat Baru
+      </button>
+    </div>
+
+    <div class="sidebar-body">
+
+      <div class="nav-section-label">Menu Utama</div>
+
+      <div class="nav-item active" onclick="setActive(this); newChat()">
+        <span class="nav-item-icon">💬</span>
+        <span class="nav-item-text">Chat DesAi</span>
+      </div>
+      <div class="nav-item" onclick="setActive(this)">
+        <span class="nav-item-icon">📄</span>
+        <span class="nav-item-text">Buat Surat</span>
+        <span class="nav-item-badge">20+</span>
+      </div>
+      <div class="nav-item" onclick="setActive(this)">
+        <span class="nav-item-icon">👥</span>
+        <span class="nav-item-text">Data Warga</span>
+      </div>
+      <div class="nav-item" onclick="setActive(this)">
+        <span class="nav-item-icon">📋</span>
+        <span class="nav-item-text">Administrasi</span>
+      </div>
+      <div class="nav-item" onclick="setActive(this)">
+        <span class="nav-item-icon">📊</span>
+        <span class="nav-item-text">Laporan Desa</span>
+      </div>
+      <div class="nav-item" onclick="setActive(this)">
+        <span class="nav-item-icon">📢</span>
+        <span class="nav-item-text">Pengumuman</span>
+      </div>
+
+      <div class="nav-divider"></div>
+      <div class="nav-section-label">Riwayat Chat</div>
+
+      <div class="chat-history-item">
+        <span class="hist-icon">🕐</span>
+        <span class="hist-text">Surat domisili Budi S.</span>
+      </div>
+      <div class="chat-history-item">
+        <span class="hist-icon">🕐</span>
+        <span class="hist-text">SKCK warga RT 03</span>
+      </div>
+      <div class="chat-history-item">
+        <span class="hist-icon">🕐</span>
+        <span class="hist-text">Laporan bulanan Mei</span>
+      </div>
+      <div class="chat-history-item">
+        <span class="hist-icon">🕐</span>
+        <span class="hist-text">Surat keterangan usaha</span>
+      </div>
+      <div class="chat-history-item">
+        <span class="hist-icon">🕐</span>
+        <span class="hist-text">Pengumuman gotong royong</span>
+      </div>
+
+      <div class="nav-divider"></div>
+
+      <div class="nav-item" onclick="setActive(this)">
+        <span class="nav-item-icon">⚙️</span>
+        <span class="nav-item-text">Pengaturan</span>
+      </div>
+      <div class="nav-item" onclick="setActive(this)">
+        <span class="nav-item-icon">❓</span>
+        <span class="nav-item-text">Bantuan</span>
+      </div>
+
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-profile">
+        <div class="user-avatar">👤</div>
+        <div>
+          <div class="user-name">Perangkat Desa</div>
+          <div class="user-role">Administrator</div>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ══════════════════════════════
+       MAIN
+  ══════════════════════════════ -->
+  <div class="main">
+
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="btn-sidebar-toggle" onclick="toggleSidebar()">☰</button>
+        <div class="model-selector">
+          <span class="model-dot"></span>
+          DesAi · Desa Edition
+          <span style="color:var(--text-3);font-size:0.75rem;">▾</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="icon-btn">🔍</button>
+        <button class="icon-btn">↗</button>
+        <button class="icon-btn">⚙</button>
+      </div>
+    </div>
+
+    <div class="chat-area" id="chatArea">
+
+      <!-- Welcome Screen -->
+      <div class="welcome-screen" id="welcomeScreen">
+        <img class="welcome-logo" src="assets/desai.png" alt="DesAi"
+             onerror="this.outerHTML='<div class=\'welcome-logo-fallback\'>🏡</div>'"/>
+        <div class="welcome-title">Selamat datang di DesAi</div>
+        <div class="welcome-sub">Asisten AI untuk administrasi dan pelayanan desa. Tanyakan apa saja — dari membuat surat hingga informasi regulasi desa.</div>
+        <div class="suggestion-grid">
+          <div class="suggestion-card" onclick="useSuggestion('Buatkan surat keterangan domisili')">
+            <div class="suggestion-icon">📄</div>
+            <div class="suggestion-title">Surat Domisili</div>
+            <div class="suggestion-desc">Buat surat keterangan domisili untuk warga</div>
+          </div>
+          <div class="suggestion-card" onclick="useSuggestion('Buatkan surat keterangan tidak mampu')">
+            <div class="suggestion-icon">📋</div>
+            <div class="suggestion-title">Surat Tidak Mampu</div>
+            <div class="suggestion-desc">Surat untuk keperluan bantuan sosial</div>
+          </div>
+          <div class="suggestion-card" onclick="useSuggestion('Apa saja jenis surat yang bisa dibuat?')">
+            <div class="suggestion-icon">📑</div>
+            <div class="suggestion-title">Daftar Surat</div>
+            <div class="suggestion-desc">Lihat semua template surat yang tersedia</div>
+          </div>
+          <div class="suggestion-card" onclick="useSuggestion('Bagaimana prosedur pembuatan KTP?')">
+            <div class="suggestion-icon">🪪</div>
+            <div class="suggestion-title">Prosedur KTP</div>
+            <div class="suggestion-desc">Syarat dan alur pembuatan KTP baru</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div class="messages-container" id="messagesContainer"></div>
+
+    </div>
+
+    <div class="input-area">
+      <div class="input-wrap">
+        <div class="input-row">
+          <div class="input-actions-left">
+            <button class="input-btn" title="Lampiran">📎</button>
+          </div>
+          <textarea
+            id="chatInput"
+            placeholder="Ketik pesan atau perintah... (contoh: buat surat keterangan usaha)"
+            rows="1"
+          ></textarea>
+          <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M2 8h12M9 3l5 5-5 5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="input-hint">DesAi dapat membuat kesalahan. Periksa kembali dokumen penting sebelum digunakan.</div>
+    </div>
+
+  </div>
+</div>
+
+<script src="js/desai.js"></script>
+<script>
+  function setActive(el) {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    el.classList.add('active');
+  }
+</script>
+
+</body>
+</html>

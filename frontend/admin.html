@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Penduduk | Desa Motabang</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <a href="#mainContent" class="skip-link">Lewati ke konten utama</a>
+
+  <div class="mobile-topbar">
+    <button
+      class="menu-toggle"
+      type="button"
+      id="menuToggle"
+      aria-label="Buka menu navigasi"
+      aria-controls="sidebarNav"
+      aria-expanded="false"
+      onclick="toggleSidebar()"
+    >
+      ☰
+    </button>
+
+    <div class="mobile-topbar-brand">
+      <img src="assets/logodesa.png" alt="Logo Desa Motabang">
+      <div>
+        <span class="mobile-topbar-label">Portal Admin</span>
+        <strong>Desa Motabang</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()" aria-hidden="true"></div>
+
+  <div class="admin-layout">
+    <aside class="sidebar" id="sidebarNav" aria-label="Navigasi admin">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo">
+          <img src="assets/logodesa.png" alt="Logo Desa Motabang">
+        </div>
+        <div class="sidebar-copy">
+          <span class="sidebar-label">Portal Admin</span>
+          <strong>Desa Motabang</strong>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Menu utama admin">
+        <button class="nav-item active" type="button" onclick="showPage('dashboard', this); closeSidebar();">
+          <span class="nav-icon" aria-hidden="true">□</span>
+          <span class="nav-text">Dashboard</span>
+        </button>
+
+        <button class="nav-item" type="button" onclick="showPage('penduduk', this); closeSidebar();">
+          <span class="nav-icon" aria-hidden="true">▣</span>
+          <span class="nav-text">Data Penduduk</span>
+        </button>
+
+        <a class="nav-item nav-link" href="pilih.html">
+          <span class="nav-icon" aria-hidden="true">←</span>
+          <span class="nav-text">Kembali</span>
+        </a>
+      </nav>
+
+      <button class="btn-logout" type="button" onclick="logout()">Logout</button>
+    </aside>
+
+    <main class="main-content" id="mainContent">
+      <section id="dashboard" class="page active" aria-labelledby="dashboardTitle">
+        <div class="page-header">
+          <div>
+            <p class="page-kicker">Dashboard</p>
+            <h1 id="dashboardTitle">Admin Penduduk</h1>
+            <p class="page-description">Kelola data kependudukan Desa Motabang dengan alur kerja yang lebih rapi dan cepat.</p>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-label">Total Penduduk</span>
+            <strong class="stat-value" id="totalPenduduk">0</strong>
+            <span class="stat-note">Data warga terdaftar</span>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-label">Laki-laki</span>
+            <strong class="stat-value" id="totalLaki">0</strong>
+            <span class="stat-note">Jumlah penduduk pria</span>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-label">Perempuan</span>
+            <strong class="stat-value" id="totalPerempuan">0</strong>
+            <span class="stat-note">Jumlah penduduk wanita</span>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-label">Kepala Keluarga</span>
+            <strong class="stat-value" id="totalKeluarga">0</strong>
+            <span class="stat-note">Data keluarga aktif</span>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <h2>Ringkasan</h2>
+          <p>Selamat datang di panel admin Desa Motabang. Gunakan menu data penduduk untuk import, meninjau, mengubah, dan mengelola data warga secara lebih terstruktur.</p>
+        </div>
+      </section>
+
+      <section id="penduduk" class="page" aria-labelledby="pendudukTitle">
+        <div class="page-header">
+          <div>
+            <p class="page-kicker">Manajemen Data</p>
+            <h1 id="pendudukTitle">Data Penduduk</h1>
+            <p class="page-description">Import file Excel, filter data, dan kelola data penduduk dari satu halaman kerja.</p>
+          </div>
+        </div>
+
+        <div class="panel-card toolbar-card">
+          <div class="toolbar-block">
+            <h3>Import Data</h3>
+            <div class="toolbar-actions">
+              <input type="file" id="fileExcel" accept=".xlsx,.xls,.csv">
+              <button class="btn btn-primary" type="button" onclick="importExcel()">Preview Excel</button>
+              <button class="btn btn-success" type="button" onclick="saveToDatabase()">Simpan ke Database</button>
+            </div>
+          </div>
+
+          <div class="toolbar-block">
+            <h3>Kelola Data</h3>
+            <div class="toolbar-actions">
+              <button class="btn btn-secondary" type="button" onclick="loadPenduduk(1)">Refresh Data</button>
+              <button class="btn btn-info" type="button" onclick="exportExcel()">Export Excel</button>
+              <button class="btn btn-warning" type="button" onclick="openDuplicateModal()">Cek Duplikat</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-card filter-card">
+          <label class="sr-only" for="searchInput">Cari data penduduk</label>
+          <input
+            type="text"
+            id="searchInput"
+            class="search-input"
+            placeholder="Cari nama, NIK, atau alamat..."
+            oninput="handleSearch()"
+          >
+
+          <label class="sr-only" for="filterDusun">Filter dusun</label>
+          <select id="filterDusun" class="filter-select" onchange="handleFilter()">
+            <option value="">Semua Dusun</option>
+          </select>
+
+          <label class="sr-only" for="filterJK">Filter jenis kelamin</label>
+          <select id="filterJK" class="filter-select" onchange="handleFilter()">
+            <option value="">Semua Jenis Kelamin</option>
+            <option value="Laki-laki">Laki-laki</option>
+            <option value="Perempuan">Perempuan</option>
+          </select>
+        </div>
+
+        <div class="table-card">
+          <div class="table-header">
+            <h3>Daftar Penduduk</h3>
+            <span class="table-subtitle">Data aktif yang tersedia di sistem</span>
+          </div>
+
+          <div class="table-wrapper" tabindex="0" aria-label="Tabel data penduduk, dapat digeser horizontal pada layar kecil">
+            <table class="data-table" id="tabelPenduduk">
+              <thead>
+                <tr>
+                  <th scope="col">No</th>
+                  <th scope="col">Dusun</th>
+                  <th scope="col">RW/RT</th>
+                  <th scope="col">Kode KK</th>
+                  <th scope="col">NIK</th>
+                  <th scope="col">Nama</th>
+                  <th scope="col">JK</th>
+                  <th scope="col">TTL</th>
+                  <th scope="col">Usia</th>
+                  <th scope="col">Alamat</th>
+                  <th scope="col">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="11" class="table-state">Memuat data...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="pagination-card" aria-label="Navigasi pagination">
+          <button class="btn-page" id="prevPage" type="button" onclick="changePage(-1)">Sebelumnya</button>
+          <span class="page-info" id="pageInfo">Halaman 1 dari 1</span>
+          <button class="btn-page" id="nextPage" type="button" onclick="changePage(1)">Berikutnya</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="modalForm" class="modal" aria-hidden="true">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-header">
+        <h3 id="modalTitle">Form Penduduk</h3>
+        <button class="modal-close" type="button" aria-label="Tutup form" onclick="closeModal('modalForm')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="formPenduduk">
+          <input type="hidden" id="editId">
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="dusun">Dusun</label>
+              <input type="text" id="dusun">
+            </div>
+            <div class="form-group">
+              <label for="rw">RW</label>
+              <input type="text" id="rw">
+            </div>
+            <div class="form-group">
+              <label for="rt">RT</label>
+              <input type="text" id="rt">
+            </div>
+            <div class="form-group">
+              <label for="kode_keluarga">Kode Keluarga</label>
+              <input type="text" id="kode_keluarga">
+            </div>
+            <div class="form-group">
+              <label for="nik">NIK</label>
+              <input type="text" id="nik" inputmode="numeric">
+            </div>
+            <div class="form-group">
+              <label for="nama">Nama</label>
+              <input type="text" id="nama">
+            </div>
+            <div class="form-group">
+              <label for="jenis_kelamin">Jenis Kelamin</label>
+              <select id="jenis_kelamin">
+                <option value="">Pilih</option>
+                <option value="Laki-laki">Laki-laki</option>
+                <option value="Perempuan">Perempuan</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="tempat_lahir">Tempat Lahir</label>
+              <input type="text" id="tempat_lahir">
+            </div>
+            <div class="form-group">
+              <label for="tanggal_lahir">Tanggal Lahir</label>
+              <input type="date" id="tanggal_lahir">
+            </div>
+            <div class="form-group">
+              <label for="usia">Usia</label>
+              <input type="number" id="usia" inputmode="numeric">
+            </div>
+            <div class="form-group">
+              <label for="hubungan">Hubungan</label>
+              <input type="text" id="hubungan">
+            </div>
+            <div class="form-group">
+              <label for="status">Status</label>
+              <input type="text" id="status">
+            </div>
+            <div class="form-group">
+              <label for="agama">Agama</label>
+              <input type="text" id="agama">
+            </div>
+            <div class="form-group">
+              <label for="gol_darah">Golongan Darah</label>
+              <input type="text" id="gol_darah">
+            </div>
+            <div class="form-group">
+              <label for="kewarganegaraan">Kewarganegaraan</label>
+              <input type="text" id="kewarganegaraan">
+            </div>
+            <div class="form-group">
+              <label for="etnis">Etnis / Suku</label>
+              <input type="text" id="etnis">
+            </div>
+            <div class="form-group">
+              <label for="pendidikan">Pendidikan</label>
+              <input type="text" id="pendidikan">
+            </div>
+            <div class="form-group">
+              <label for="pekerjaan">Pekerjaan</label>
+              <input type="text" id="pekerjaan">
+            </div>
+            <div class="form-group form-group-full">
+              <label for="alamat">Alamat</label>
+              <textarea id="alamat"></textarea>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modalForm')">Batal</button>
+            <button type="button" class="btn btn-primary" onclick="savePenduduk()">Simpan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="duplicateModal" class="modal" aria-hidden="true">
+    <div class="modal-dialog modal-wide" role="dialog" aria-modal="true" aria-labelledby="duplicateModalTitle">
+      <div class="modal-header">
+        <h3 id="duplicateModalTitle">Data Duplikat</h3>
+        <button class="modal-close" type="button" aria-label="Tutup data duplikat" onclick="closeModal('duplicateModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="duplicateContent" class="duplicate-content">
+          <p class="table-state">Memuat data duplikat...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/admin.js"></script>
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById("sidebarNav");
+      const backdrop = document.getElementById("sidebarBackdrop");
+      const toggle = document.getElementById("menuToggle");
+      const isOpen = sidebar.classList.toggle("sidebar-open");
+
+      backdrop.classList.toggle("active", isOpen);
+      toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      toggle.setAttribute("aria-label", isOpen ? "Tutup menu navigasi" : "Buka menu navigasi");
+
+      if (!isOpen) {
+        toggle.focus();
+      }
+    }
+
+    function closeSidebar() {
+      const sidebar = document.getElementById("sidebarNav");
+      const backdrop = document.getElementById("sidebarBackdrop");
+      const toggle = document.getElementById("menuToggle");
+
+      if (!sidebar.classList.contains("sidebar-open")) return;
+
+      sidebar.classList.remove("sidebar-open");
+      backdrop.classList.remove("active");
+      toggle.setAttribute("aria-expanded", "false");
+      toggle.setAttribute("aria-label", "Buka menu navigasi");
+    }
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape") {
+        closeSidebar();
+      }
+    });
+  </script>
+</body>
+</html>

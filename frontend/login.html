@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | Website Desa Motabang</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+  <main class="login-page">
+    <section class="login-shell" aria-label="Halaman login Website Desa Motabang">
+      <div class="brand-panel">
+        <span class="brand-chip">Portal Resmi Desa</span>
+
+        <div class="brand-content">
+          <div class="brand-logo-wrap">
+            <img src="assets/logodesa.png" class="logo-img" alt="Logo Desa Motabang">
+          </div>
+
+          <div class="brand-copy">
+            <p class="brand-label">Website Desa</p>
+            <h1 class="brand-title">Desa Motabang</h1>
+            <p class="brand-description">
+              Silakan login untuk mengakses panel administrasi website desa secara aman dan lebih nyaman.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="login-card">
+        <div class="card-header">
+          <p class="card-kicker">Akses Admin</p>
+          <h2>Masuk ke sistem</h2>
+          <p>Masukkan username dan password Anda untuk melanjutkan.</p>
+        </div>
+
+        <div class="form-group">
+          <label for="username">Username</label>
+          <div class="input-wrapper">
+            <span class="input-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 21C20 17.6863 16.4183 15 12 15C7.58172 15 4 17.6863 4 21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/>
+              </svg>
+            </span>
+            <input type="text" id="username" placeholder="Masukkan username" autocomplete="username">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-wrapper password-wrapper">
+            <span class="input-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="5" y="11" width="14" height="10" rx="2.5" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M8 11V8.5C8 6.01472 10.0147 4 12.5 4C14.9853 4 17 6.01472 17 8.5V11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <input type="password" id="password" placeholder="Masukkan password" autocomplete="current-password">
+            <button type="button" class="toggle-password" onclick="togglePassword()" aria-label="Tampilkan password">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2 12C3.8 8.5 7.4 6 12 6C16.6 6 20.2 8.5 22 12C20.2 15.5 16.6 18 12 18C7.4 18 3.8 15.5 2 12Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <button id="btnLogin" class="btn-login" onclick="login()">
+          <span class="btn-text">Masuk</span>
+          <span class="btn-loader" aria-hidden="true"></span>
+        </button>
+
+        <div id="result" class="message" role="alert" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <footer class="footer-section">
+      <p>© Desa Motabang. Sistem Informasi Desa.</p>
+    </footer>
+  </main>
+
+  <script src="js/login.js"></script>
+</body>
+</html>

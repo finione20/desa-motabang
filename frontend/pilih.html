@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Admin | Desa Motabang</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/pilih.css">
+</head>
+<body>
+  <main class="dashboard-page">
+    <section class="dashboard-shell">
+      <header class="hero-panel">
+        <div class="hero-top">
+          <div class="brand-group">
+            <div class="brand-logo">
+              <img src="assets/logodesa.png" alt="Logo Desa Motabang" class="logo">
+            </div>
+
+            <div class="brand-copy">
+              <p class="eyebrow">Portal Administrasi</p>
+              <h1>Desa Motabang</h1>
+              <p class="hero-description">
+                Kelola data desa, layanan administrasi, dan website publik dari satu panel yang lebih rapi dan modern.
+              </p>
+            </div>
+          </div>
+
+          <div class="hero-side">
+            <div class="greeting-badge" id="greetingBadge">Selamat Datang</div>
+            <div class="user-box">
+              <span class="user-label">Login sebagai</span>
+              <strong id="userName">Admin</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-title">Total Penduduk</span>
+            <strong class="stat-value" id="totalPenduduk">0</strong>
+            <span class="stat-note">Data penduduk terdaftar</span>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-title">Register Surat</span>
+            <strong class="stat-value" id="totalSurat">0</strong>
+            <span class="stat-note">Total surat tahun ini</span>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-title">Tahun Aktif</span>
+            <strong class="stat-value" id="year">2026</strong>
+            <span class="stat-note">Periode administrasi berjalan</span>
+          </div>
+        </div>
+      </header>
+
+      <section class="menu-section">
+        <div class="section-heading">
+          <p class="section-kicker">Menu Utama</p>
+          <h2>Pilih layanan yang ingin dikelola</h2>
+        </div>
+
+        <div class="menu-grid">
+          <a href="admin.html" class="menu-card">
+            <div class="menu-icon icon-blue">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="4" width="18" height="16" rx="3" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M7 8H17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M7 12H13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M7 16H11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="menu-content">
+              <h3>Panel Admin</h3>
+              <p>Kelola data penduduk, ubah informasi, dan akses fitur administrasi utama.</p>
+              <span class="menu-link">Buka panel</span>
+            </div>
+          </a>
+
+          <a href="register-surat.html" class="menu-card">
+            <div class="menu-icon icon-amber">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M7 3.75H14L19 8.75V19.25C19 20.2165 18.2165 21 17.25 21H7C5.89543 21 5 20.1046 5 19V5.75C5 4.64543 5.89543 3.75 7 3.75Z" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M14 3.75V8.75H19" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M8 13H16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M8 16.5H13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="menu-content">
+              <h3>Register Surat</h3>
+              <p>Catat surat masuk dan keluar dengan penomoran yang lebih terstruktur.</p>
+              <span class="menu-link">Buka register</span>
+            </div>
+          </a>
+
+          <a href="index.html" class="menu-card">
+            <div class="menu-icon icon-green">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 10.5L12 3L21 10.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M5.5 9.5V20H18.5V9.5" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M10 20V14H14V20" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="menu-content">
+              <h3>Website Desa</h3>
+              <p>Kelola tampilan dan konten website publik untuk masyarakat desa.</p>
+              <span class="menu-link">Buka website</span>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <section class="action-section">
+        <button class="btn-logout" onclick="logout()">
+          <span>Logout</span>
+        </button>
+      </section>
+
+      <footer class="footer">
+        <p>© Pemerintah Desa Motabang</p>
+        <p class="footer-sub">Kecamatan Lolak, Kabupaten Bolaang Mongondow</p>
+      </footer>
+    </section>
+  </main>
+
+  <script src="js/pilih.js"></script>
+</body>
+</html>
