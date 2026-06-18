@@ -57,6 +57,33 @@ app.get("/api/test-db", async (req, res) => {
   }
 });
 
+app.get("/api/debug-users", async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT
+        id,
+        username,
+        length(username) AS username_length,
+        quote_literal(username) AS raw_username,
+        role
+      FROM public.users
+      ORDER BY id ASC
+    `);
+
+    res.json({
+      status: "success",
+      total: result.rows.length,
+      users: result.rows,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      status: "error",
+      message: "Gagal membaca public.users",
+      error: err.message,
+    });
+  }
+});
+
 app.use((err, req, res, next) => {
   console.error("Error:", err);
   res.status(500).json({

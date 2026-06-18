@@ -10,7 +10,7 @@ router.post("/login", async (req, res) => {
       `
       SELECT id, username, password, role
       FROM public.users
-      WHERE username = $1
+      WHERE trim(lower(username)) = trim(lower($1))
       LIMIT 1
       `,
       [username]
