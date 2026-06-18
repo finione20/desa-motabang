@@ -4,7 +4,8 @@ const db = require("../config/database");
 
 router.post("/login", async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const username = typeof req.body?.username === "string" ? req.body.username.trim() : "";
+    const password = typeof req.body?.password === "string" ? req.body.password.trim() : "";
 
     const result = await db.query(
       `
@@ -16,23 +17,13 @@ router.post("/login", async (req, res) => {
       [username]
     );
 
-    if (result.rows.length === 0) {
-      return res.status(401).json({ message: "Username tidak ditemukan" });
-    }
-
-    const user = result.rows[0];
-
-    if (user.password !== password) {
-      return res.status(401).json({ message: "Password salah" });
-    }
-
     return res.json({
-      message: "Login berhasil",
-      user: {
-        id: user.id,
-        username: user.username,
-        role: user.role,
-      },
+      debug: true,
+      receivedBody: req.body,
+      parsedUsername: username,
+      parsedPassword: password,
+      found: result.rows.length,
+      matchedUser: result.rows[0] || null
     });
   } catch (err) {
     console.error("Login error:", err.message);

@@ -25,7 +25,10 @@ function togglePassword() {
   const isPassword = input.type === "password";
   input.type = isPassword ? "text" : "password";
   toggle.classList.toggle("is-visible", isPassword);
-  toggle.setAttribute("aria-label", isPassword ? "Sembunyikan password" : "Tampilkan password");
+  toggle.setAttribute(
+    "aria-label",
+    isPassword ? "Sembunyikan password" : "Tampilkan password"
+  );
 }
 
 function showMessage(type, text) {
@@ -73,16 +76,33 @@ async function login() {
   button.classList.add("loading");
 
   try {
+    const payload = { username, password };
+    console.log("Payload login dikirim:", payload);
+
     const res = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password })
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify(payload)
     });
 
-    const data = await res.json();
+    const rawText = await res.text();
+    console.log("Status login:", res.status);
+    console.log("Response mentah login:", rawText);
+
+    let data = {};
+    try {
+      data = rawText ? JSON.parse(rawText) : {};
+    } catch (parseError) {
+      console.error("Gagal parse JSON:", parseError);
+      showMessage("error", "Response server bukan JSON yang valid.");
+      return;
+    }
 
     if (!res.ok) {
-      showMessage("error", data.message || "Username atau password salah");
+      showMessage("error", data.message || `Login gagal (${res.status})`);
       return;
     }
 
@@ -115,7 +135,7 @@ async function login() {
 document.addEventListener("DOMContentLoaded", function () {
   const inputs = document.querySelectorAll("#username, #password");
 
-  inputs.forEach(input => {
+  inputs.forEach((input) => {
     input.addEventListener("keydown", function (e) {
       if (e.key === "Enter") {
         e.preventDefault();
