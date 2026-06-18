@@ -10,6 +10,27 @@ function bulanRomawi(b) {
   return map[b - 1] || "I";
 }
 
+function parseRequestBody(body) {
+  try {
+    if (Buffer.isBuffer(body)) {
+      return JSON.parse(body.toString("utf8"));
+    }
+
+    if (body && body.type === "Buffer" && Array.isArray(body.data)) {
+      return JSON.parse(Buffer.from(body.data).toString("utf8"));
+    }
+
+    if (typeof body === "string") {
+      return JSON.parse(body);
+    }
+
+    return body || {};
+  } catch (error) {
+    console.error("Body parse error:", error);
+    return {};
+  }
+}
+
 /* =====================================================
    GET STATISTICS
    Untuk dashboard stats cards
@@ -81,15 +102,26 @@ router.post("/", async (req, res) => {
   const client = await db.connect();
 
   try {
-    const { jenis, tanggal, perihal, bersangkutan } = req.body;
+    const body = parseRequestBody(req.body);
+
+    const jenis = typeof body.jenis === "string" ? body.jenis.trim() : "";
+    const tanggal = typeof body.tanggal === "string" ? body.tanggal.trim() : "";
+    const perihal = typeof body.perihal === "string" ? body.perihal.trim() : "";
+    const bersangkutan = typeof body.bersangkutan === "string" ? body.bersangkutan.trim() : "";
 
     if (!jenis || !tanggal || !perihal || !bersangkutan) {
       client.release();
       return res.status(400).json({ message: "Data tidak lengkap" });
     }
 
-    const tahun = new Date(tanggal).getFullYear();
-    const bulan = new Date(tanggal).getMonth() + 1;
+    const tanggalObj = new Date(tanggal);
+    if (isNaN(tanggalObj.getTime())) {
+      client.release();
+      return res.status(400).json({ message: "Tanggal surat tidak valid" });
+    }
+
+    const tahun = tanggalObj.getFullYear();
+    const bulan = tanggalObj.getMonth() + 1;
 
     console.log("📝 Creating new register:", { jenis, tanggal, perihal, bersangkutan });
 
@@ -187,7 +219,7 @@ router.get("/", async (req, res) => {
     const countResult = await db.query(countQuery, params);
 
     const total = countResult.rows[0]?.total || 0;
-    const totalPage = Math.ceil(total / limit);
+    const totalPage = Math.ceil(total / limit) || 1;
 
     const dataQuery = `
       SELECT * FROM register_surat
@@ -206,6 +238,7 @@ router.get("/", async (req, res) => {
       page,
       limit,
       total,
+      totalPages: totalPage,
       totalPage,
     });
   } catch (err) {
@@ -231,10 +264,7 @@ router.get("/:id", async (req, res) => {
       return res.status(404).json({ message: "Register tidak ditemukan" });
     }
 
-    res.json({
-      success: true,
-      data: result.rows[0],
-    });
+    res.json(result.rows[0]);
   } catch (err) {
     console.error("Error fetching single register:", err);
     return res.status(500).json({ message: "Gagal mengambil data" });
@@ -243,13 +273,16 @@ router.get("/:id", async (req, res) => {
 
 /* =====================================================
    PUT: EDIT REGISTER
-   - HANYA bisa edit perihal & bersangkutan
-   - TIDAK bisa edit nomor surat
 ===================================================== */
 router.put("/:id", async (req, res) => {
   try {
     const id = req.params.id;
-    const { perihal, bersangkutan } = req.body;
+    const body = parseRequestBody(req.body);
+
+    const tanggal = typeof body.tanggal === "string" ? body.tanggal.trim() : "";
+    const jenis = typeof body.jenis === "string" ? body.jenis.trim() : "";
+    const perihal = typeof body.perihal === "string" ? body.perihal.trim() : "";
+    const bersangkutan = typeof body.bersangkutan === "string" ? body.bersangkutan.trim() : "";
 
     if (isNaN(id)) {
       return res.status(400).json({ message: "ID harus berupa angka" });
@@ -259,7 +292,7 @@ router.put("/:id", async (req, res) => {
       return res.status(400).json({ message: "Perihal dan bersangkutan wajib diisi" });
     }
 
-    console.log(`✏️ Updating register ID ${id}`);
+    console.log(`✏️ Updating register ID ${id}`, { tanggal, jenis, perihal, bersangkutan });
 
     const result = await db.query(
       `UPDATE register_surat
