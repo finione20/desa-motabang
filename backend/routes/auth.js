@@ -8,7 +8,13 @@ router.post("/login", async (req, res) => {
 
     console.log("Login attempt:", { username });
 
-    const sql = "SELECT id, username, password, role FROM users WHERE username = $1 LIMIT 1";
+    const sql = `
+      SELECT id, username, password, role
+      FROM public.users
+      WHERE username = $1
+      LIMIT 1
+    `;
+
     const result = await db.query(sql, [username]);
 
     if (result.rows.length === 0) {
