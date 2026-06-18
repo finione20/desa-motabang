@@ -1,0 +1,25 @@
+[build]
+  command = "npm install"
+  publish = "frontend"
+
+[functions]
+  directory = "netlify/functions"
+  external_node_modules = ["express", "body-parser", "cors", "pg", "dotenv", "multer", "xlsx", "serverless-http"]
+  node_bundler = "esbuild"
+  included_files = ["backend/**"]
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

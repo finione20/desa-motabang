@@ -3,22 +3,14 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Database
 const db = require("./config/database");
 
-// Middleware
+const app = express();
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5500",
-      "http://127.0.0.1:5500",
-      "http://localhost:3000",
-      "https://desamotabang.netlify.app"
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
@@ -26,13 +18,11 @@ app.use(
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
 
-// Log setiap request
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
   next();
 });
 
-// Routes
 const authRoute = require("./routes/auth");
 app.use("/api/auth", authRoute);
 
@@ -42,7 +32,6 @@ app.use("/api/penduduk", pendudukRoute);
 const registerSuratRoute = require("./routes/registerSurat");
 app.use("/api/register-surat", registerSuratRoute);
 
-// Root endpoint
 app.get("/", (req, res) => {
   res.json({
     message: "Server Website Desa Aktif",
@@ -51,7 +40,6 @@ app.get("/", (req, res) => {
   });
 });
 
-// Test database endpoint
 app.get("/api/test-db", async (req, res) => {
   try {
     const result = await db.query("SELECT 1 + 1 AS solution");
@@ -69,7 +57,6 @@ app.get("/api/test-db", async (req, res) => {
   }
 });
 
-// Error handling middleware
 app.use((err, req, res, next) => {
   console.error("Error:", err);
   res.status(500).json({
@@ -78,7 +65,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler
 app.use((req, res) => {
   res.status(404).json({
     status: "error",
@@ -86,19 +72,4 @@ app.use((req, res) => {
   });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log("=".repeat(50));
-  console.log(`🚀 Server aktif di port ${PORT}`);
-  console.log(`📅 ${new Date().toLocaleString("id-ID")}`);
-  console.log("=".repeat(50));
-});
-
-// Handle uncaught errors
-process.on("uncaughtException", (err) => {
-  console.error("❌ Uncaught Exception:", err);
-});
-
-process.on("unhandledRejection", (err) => {
-  console.error("❌ Unhandled Rejection:", err);
-});
+module.exports = app;
