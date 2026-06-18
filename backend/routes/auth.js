@@ -6,19 +6,27 @@ router.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    const sql = "SELECT id, username, role FROM users WHERE username = $1 AND password = $2 LIMIT 1";
-    const result = await db.query(sql, [username, password]);
+    console.log("Login attempt:", { username });
+
+    const sql = "SELECT id, username, password, role FROM users WHERE username = $1 LIMIT 1";
+    const result = await db.query(sql, [username]);
 
     if (result.rows.length === 0) {
-      return res.status(401).json({ message: "Username atau password salah" });
+      return res.status(401).json({ message: "Username tidak ditemukan" });
+    }
+
+    const user = result.rows[0];
+
+    if (user.password !== password) {
+      return res.status(401).json({ message: "Password salah" });
     }
 
     res.json({
       message: "Login berhasil",
       user: {
-        id: result.rows[0].id,
-        username: result.rows[0].username,
-        role: result.rows[0].role,
+        id: user.id,
+        username: user.username,
+        role: user.role,
       },
     });
   } catch (err) {
