@@ -1,4 +1,8 @@
-const API_URL = "http://localhost:3000/api";
+const API_URL =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1"
+    ? "http://localhost:3000/api"
+    : "/api";
 const KODE_DESA = "2006";
 let currentPage = 1;
 let totalPages = 1;
