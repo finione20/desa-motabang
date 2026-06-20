@@ -6,11 +6,14 @@
   <title>Desa Motabang</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/index.css">
 </head>
 <body>
   <a href="#mainContent" class="skip-link">Lewati ke konten utama</a>
+
+  <!-- Progress bar pembacaan halaman -->
+  <div class="scroll-progress" aria-hidden="true"><span id="scrollProgressBar"></span></div>
 
   <header class="site-header">
     <div class="container header-inner">
@@ -26,6 +29,11 @@
       </a>
 
       <div class="header-actions">
+        <button type="button" class="theme-toggle" id="themeToggle" aria-label="Ganti tampilan gelap atau terang" aria-pressed="false">
+          <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg>
+          <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+
         <a href="login.html" class="btn btn-primary">Login Admin</a>
 
         <button
@@ -36,7 +44,7 @@
           aria-controls="mainNavMenu"
           aria-expanded="false"
         >
-          ☰
+          <span class="nav-toggle-bars" aria-hidden="true"></span>
         </button>
       </div>
     </div>
@@ -44,85 +52,137 @@
 
   <nav class="main-nav" id="navbar" aria-label="Navigasi utama">
     <div class="container nav-inner" id="mainNavMenu">
-      <a href="#beranda" class="nav-link active">Beranda</a>
-      <a href="#profil" class="nav-link">Profil</a>
-      <a href="#statistik" class="nav-link">Statistik</a>
-      <a href="#pengumuman" class="nav-link">Pengumuman</a>
-      <a href="#layanan" class="nav-link">Layanan</a>
-      <a href="#kontak" class="nav-link">Kontak</a>
+      <a href="#beranda" class="nav-link active" data-section="beranda">Beranda</a>
+      <a href="#profil" class="nav-link" data-section="profil">Profil</a>
+      <a href="#peta" class="nav-link" data-section="peta">Peta Dusun</a>
+      <a href="#statistik" class="nav-link" data-section="statistik">Statistik</a>
+      <a href="#pengumuman" class="nav-link" data-section="pengumuman">Pengumuman</a>
+      <a href="#layanan" class="nav-link" data-section="layanan">Layanan</a>
+      <a href="#kontak" class="nav-link" data-section="kontak">Kontak</a>
     </div>
   </nav>
 
   <main id="mainContent">
     <section class="hero section" id="beranda">
+      <div class="hero-bg" aria-hidden="true">
+        <svg class="hero-blob" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+          <path fill="currentColor" d="M433,305Q424,360,378,397Q332,434,277,440Q222,446,175,415Q128,384,99,335Q70,286,86,231Q102,176,144,138Q186,100,242,92Q298,84,348,113Q398,142,419,193Q440,244,433,305Z" />
+        </svg>
+        <div class="hero-grain"></div>
+      </div>
+
       <div class="container hero-grid">
         <div class="hero-copy">
-          <p class="section-kicker">Portal Informasi Desa</p>
-          <h1>Selamat Datang di Website Resmi Desa Motabang</h1>
-          <p class="hero-text">
+          <p class="section-kicker reveal-up">Portal Informasi Desa</p>
+          <h1 class="reveal-up" style="--d:1">
+            <span class="word-stack">
+              <span class="line">Selamat Datang di</span>
+              <span class="line line-accent">Desa Motabang</span>
+            </span>
+          </h1>
+          <p class="hero-text reveal-up" style="--d:2">
             Desa Motabang merupakan salah satu desa di Kecamatan Lolak, Kabupaten Bolaang Mongondow, Sulawesi Utara. Website ini menyediakan informasi desa, pelayanan administrasi, data kependudukan, serta berbagai informasi pembangunan desa secara terbuka dan transparan.
           </p>
 
-          <div class="hero-actions">
+          <div class="hero-actions reveal-up" style="--d:3">
             <a href="#profil" class="btn btn-primary">Lihat Profil Desa</a>
             <a href="#layanan" class="btn btn-secondary">Layanan Administrasi</a>
           </div>
+
+          <div class="hero-chips reveal-up" style="--d:4" role="list">
+            <span role="listitem">🌾 Pertanian</span>
+            <span role="listitem">🐟 Perikanan</span>
+            <span role="listitem">🤝 Gotong Royong</span>
+          </div>
         </div>
 
-        <div class="hero-panel">
-          <div class="hero-card">
+        <div class="hero-panel reveal-up" style="--d:2">
+          <div class="hero-card" id="heroCard">
             <span class="hero-card-label">Informasi Singkat</span>
             <ul class="hero-points">
-              <li>Terdiri dari 8 dusun yang tersebar di wilayah Desa Motabang.</li>
-              <li>Masyarakat didominasi oleh sektor pertanian dan perikanan.</li>
-              <li>Pelayanan administrasi desa tersedia secara digital dan langsung di kantor desa.</li>
+              <li>
+                <button type="button" class="hero-point-btn" data-target="peta">
+                  <span class="hero-point-icon">🏘️</span>
+                  <span>Terdiri dari <strong>8 dusun</strong> yang tersebar di wilayah Desa Motabang.</span>
+                  <span class="hero-point-arrow" aria-hidden="true">→</span>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="hero-point-btn" data-target="profil">
+                  <span class="hero-point-icon">🌾</span>
+                  <span>Masyarakat didominasi oleh sektor pertanian dan perikanan.</span>
+                  <span class="hero-point-arrow" aria-hidden="true">→</span>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="hero-point-btn" data-target="layanan">
+                  <span class="hero-point-icon">🗂️</span>
+                  <span>Pelayanan administrasi desa tersedia secara digital dan langsung di kantor desa.</span>
+                  <span class="hero-point-arrow" aria-hidden="true">→</span>
+                </button>
+              </li>
             </ul>
           </div>
         </div>
       </div>
+
+      <button type="button" class="scroll-hint" id="scrollHint" aria-label="Gulir ke bawah">
+        <span></span>
+      </button>
     </section>
 
     <section class="section" id="profil">
       <div class="container">
-        <div class="section-head">
+        <div class="section-head reveal-up">
           <p class="section-kicker">Profil Desa</p>
           <h2>Desa Motabang</h2>
           <p class="section-text">Mengenal lebih dekat identitas, kondisi wilayah, dan karakter masyarakat desa.</p>
         </div>
 
-        <div class="info-grid">
-          <article class="info-card animate-on-scroll">
-            <h3>Identitas Desa</h3>
-            <div class="info-list">
-              <div class="info-item"><span>Nama Desa</span><strong>Motabang</strong></div>
-              <div class="info-item"><span>Kecamatan</span><strong>Lolak</strong></div>
-              <div class="info-item"><span>Kabupaten</span><strong>Bolaang Mongondow</strong></div>
-              <div class="info-item"><span>Provinsi</span><strong>Sulawesi Utara</strong></div>
-              <div class="info-item"><span>Kode Wilayah</span><strong>71.01.12.2006</strong></div>
-              <div class="info-item"><span>Kode Pos</span><strong>95761</strong></div>
-            </div>
-          </article>
+        <div class="profile-tabs reveal-up">
+          <div class="tab-list" role="tablist" aria-label="Profil desa">
+            <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="tab-identitas" id="tabbtn-identitas" data-tab="identitas">
+              <span class="tab-icon">🪪</span> Identitas Desa
+            </button>
+            <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-geografis" id="tabbtn-geografis" data-tab="geografis">
+              <span class="tab-icon">🗺️</span> Geografis
+            </button>
+            <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-demografi" id="tabbtn-demografi" data-tab="demografi">
+              <span class="tab-icon">👥</span> Demografi
+            </button>
+          </div>
 
-          <article class="info-card animate-on-scroll">
-            <h3>Geografis</h3>
-            <div class="info-list">
-              <div class="info-item"><span>Jumlah Dusun</span><strong>8</strong></div>
-              <div class="info-item"><span>Wilayah</span><strong>Pesisir dan Perbukitan</strong></div>
-              <div class="info-item"><span>Potensi Utama</span><strong>Pertanian, Perikanan, dan UMKM</strong></div>
-            </div>
-          </article>
+          <div class="tab-panels">
+            <article class="tab-panel active" id="tab-identitas" role="tabpanel" aria-labelledby="tabbtn-identitas">
+              <div class="info-list">
+                <div class="info-item"><span>Nama Desa</span><strong>Motabang</strong></div>
+                <div class="info-item"><span>Kecamatan</span><strong>Lolak</strong></div>
+                <div class="info-item"><span>Kabupaten</span><strong>Bolaang Mongondow</strong></div>
+                <div class="info-item"><span>Provinsi</span><strong>Sulawesi Utara</strong></div>
+                <div class="info-item"><span>Kode Wilayah</span><strong>71.01.12.2006</strong></div>
+                <div class="info-item"><span>Kode Pos</span><strong>95761</strong></div>
+              </div>
+            </article>
 
-          <article class="info-card animate-on-scroll">
-            <h3>Demografi</h3>
-            <div class="info-list">
-              <div class="info-item"><span>Mata Pencaharian</span><strong>Petani dan Nelayan</strong></div>
-              <div class="info-item"><span>Karakter Masyarakat</span><strong>Gotong Royong</strong></div>
-              <div class="info-item"><span>Fokus Pembangunan</span><strong>Kesejahteraan Bersama</strong></div>
-            </div>
-          </article>
+            <article class="tab-panel" id="tab-geografis" role="tabpanel" aria-labelledby="tabbtn-geografis" hidden>
+              <div class="info-list">
+                <div class="info-item"><span>Jumlah Dusun</span><strong>8</strong></div>
+                <div class="info-item"><span>Wilayah</span><strong>Pesisir dan Perbukitan</strong></div>
+                <div class="info-item"><span>Potensi Utama</span><strong>Pertanian, Perikanan, dan UMKM</strong></div>
+              </div>
+            </article>
+
+            <article class="tab-panel" id="tab-demografi" role="tabpanel" aria-labelledby="tabbtn-demografi" hidden>
+              <div class="info-list">
+                <div class="info-item"><span>Mata Pencaharian</span><strong>Petani dan Nelayan</strong></div>
+                <div class="info-item"><span>Karakter Masyarakat</span><strong>Gotong Royong</strong></div>
+                <div class="info-item"><span>Fokus Pembangunan</span><strong>Kesejahteraan Bersama</strong></div>
+              </div>
+            </article>
+          </div>
         </div>
 
-        <div class="content-card animate-on-scroll">
+        <div class="content-card reveal-up">
           <p>
             Desa Motabang merupakan salah satu desa yang berada di Kecamatan Lolak, Kabupaten Bolaang Mongondow, Provinsi Sulawesi Utara. Desa ini terdiri dari 8 dusun dan memiliki potensi sumber daya alam yang cukup besar di sektor pertanian, perikanan, dan usaha masyarakat.
           </p>
@@ -133,51 +193,124 @@
       </div>
     </section>
 
-    <section class="section section-soft" id="statistik">
+    <section class="section section-soft" id="peta">
       <div class="container">
-        <div class="section-head">
+        <div class="section-head reveal-up">
+          <p class="section-kicker">Wilayah Desa</p>
+          <h2>Peta 8 Dusun Motabang</h2>
+          <p class="section-text">Klik salah satu titik dusun untuk melihat keterangannya. Peta ini adalah ilustrasi skematik, bukan peta geografis presisi.</p>
+        </div>
+
+        <div class="map-wrap reveal-up">
+          <div class="map-visual">
+            <svg id="dusunMap" viewBox="0 0 520 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Peta skematik 8 dusun Desa Motabang">
+              <path class="map-land" d="M40,260 C30,180 90,90 180,60 C260,35 340,55 400,40 C460,28 500,70 495,130 C490,190 450,210 470,270 C485,315 440,340 380,330 C330,322 300,340 240,335 C170,329 60,330 40,260 Z" />
+              <path class="map-river" d="M60,300 C140,260 180,300 240,260 C310,215 360,260 470,210" />
+
+              <g class="dusun-pin" data-id="1" tabindex="0" role="button" aria-pressed="false" aria-label="Dusun 1">
+                <circle cx="120" cy="150" r="13"></circle>
+                <text x="120" y="154">1</text>
+              </g>
+              <g class="dusun-pin" data-id="2" tabindex="0" role="button" aria-pressed="false" aria-label="Dusun 2">
+                <circle cx="195" cy="100" r="13"></circle>
+                <text x="195" y="104">2</text>
+              </g>
+              <g class="dusun-pin" data-id="3" tabindex="0" role="button" aria-pressed="false" aria-label="Dusun 3">
+                <circle cx="270" cy="85" r="13"></circle>
+                <text x="270" y="89">3</text>
+              </g>
+              <g class="dusun-pin" data-id="4" tabindex="0" role="button" aria-pressed="false" aria-label="Dusun 4">
+                <circle cx="350" cy="95" r="13"></circle>
+                <text x="350" y="99">4</text>
+              </g>
+              <g class="dusun-pin" data-id="5" tabindex="0" role="button" aria-pressed="false" aria-label="Dusun 5">
+                <circle cx="420" cy="135" r="13"></circle>
+                <text x="420" y="139">5</text>
+              </g>
+              <g class="dusun-pin" data-id="6" tabindex="0" role="button" aria-pressed="false" aria-label="Dusun 6">
+                <circle cx="400" cy="225" r="13"></circle>
+                <text x="400" y="229">6</text>
+              </g>
+              <g class="dusun-pin" data-id="7" tabindex="0" role="button" aria-pressed="false" aria-label="Dusun 7">
+                <circle cx="300" cy="265" r="13"></circle>
+                <text x="300" y="269">7</text>
+              </g>
+              <g class="dusun-pin" data-id="8" tabindex="0" role="button" aria-pressed="false" aria-label="Dusun 8">
+                <circle cx="190" cy="245" r="13"></circle>
+                <text x="190" y="249">8</text>
+              </g>
+            </svg>
+          </div>
+
+          <div class="map-detail" id="mapDetail">
+            <span class="map-detail-eyebrow">Pilih titik dusun</span>
+            <h3 id="mapDetailTitle">Dusun belum dipilih</h3>
+            <p id="mapDetailText">Sentuh atau klik salah satu nomor pada peta di samping untuk menampilkan keterangan dusun tersebut di sini.</p>
+            <div class="map-detail-list" id="mapDetailQuickList">
+              <button type="button" class="map-quick-btn" data-id="1">Dusun 1</button>
+              <button type="button" class="map-quick-btn" data-id="2">Dusun 2</button>
+              <button type="button" class="map-quick-btn" data-id="3">Dusun 3</button>
+              <button type="button" class="map-quick-btn" data-id="4">Dusun 4</button>
+              <button type="button" class="map-quick-btn" data-id="5">Dusun 5</button>
+              <button type="button" class="map-quick-btn" data-id="6">Dusun 6</button>
+              <button type="button" class="map-quick-btn" data-id="7">Dusun 7</button>
+              <button type="button" class="map-quick-btn" data-id="8">Dusun 8</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="statistik">
+      <div class="container">
+        <div class="section-head reveal-up">
           <p class="section-kicker">Statistik Penduduk</p>
           <h2>Data Kependudukan Desa</h2>
           <p class="section-text">Data ini diperbarui dari sistem desa secara otomatis.</p>
         </div>
 
-        <div class="stats-grid">
-          <article class="stat-card animate-on-scroll">
+        <div class="stats-grid reveal-up">
+          <article class="stat-card" data-stat="total">
             <span class="stat-label">Total Penduduk</span>
             <strong class="stat-number" id="totalPenduduk">-</strong>
             <span class="stat-note">Jumlah seluruh warga terdaftar</span>
+            <div class="stat-bar"><span id="barTotal"></span></div>
           </article>
 
-          <article class="stat-card animate-on-scroll">
+          <article class="stat-card" data-stat="laki">
             <span class="stat-label">Laki-laki</span>
             <strong class="stat-number" id="lakiPenduduk">-</strong>
             <span class="stat-note">Data warga laki-laki</span>
+            <div class="stat-bar"><span id="barLaki"></span></div>
           </article>
 
-          <article class="stat-card animate-on-scroll">
+          <article class="stat-card" data-stat="perempuan">
             <span class="stat-label">Perempuan</span>
             <strong class="stat-number" id="perempuanPenduduk">-</strong>
             <span class="stat-note">Data warga perempuan</span>
+            <div class="stat-bar"><span id="barPerempuan"></span></div>
           </article>
 
-          <article class="stat-card animate-on-scroll">
+          <article class="stat-card" data-stat="kk">
             <span class="stat-label">Kepala Keluarga</span>
             <strong class="stat-number" id="totalKK">-</strong>
             <span class="stat-note">Jumlah keluarga terdata</span>
+            <div class="stat-bar"><span id="barKK"></span></div>
           </article>
         </div>
+        <p class="stats-status" id="statsStatus" aria-live="polite"></p>
       </div>
     </section>
 
-    <section class="section" id="pengumuman">
+    <section class="section section-soft" id="pengumuman">
       <div class="container">
-        <div class="section-head">
+        <div class="section-head reveal-up">
           <p class="section-kicker">Pengumuman</p>
           <h2>Informasi Desa</h2>
           <p class="section-text">Informasi dan pengumuman penting untuk masyarakat Desa Motabang.</p>
         </div>
 
-        <div class="announcement-card animate-on-scroll">
+        <div class="announcement-card reveal-up">
           <div class="announcement-meta">
             <span class="announcement-tag">Hari Ini</span>
           </div>
@@ -191,47 +324,123 @@
       </div>
     </section>
 
-    <section class="section section-soft" id="layanan">
+    <section class="section" id="layanan">
       <div class="container">
-        <div class="section-head">
+        <div class="section-head reveal-up">
           <p class="section-kicker">Layanan Administrasi</p>
           <h2>Pelayanan Desa</h2>
           <p class="section-text">Berbagai kebutuhan administrasi masyarakat yang dapat diurus melalui pemerintah desa.</p>
         </div>
 
-        <div class="service-grid">
-          <article class="service-card animate-on-scroll">
-            <h3>Surat Keterangan Domisili</h3>
+        <div class="service-toolbar reveal-up">
+          <div class="service-search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+            <input type="text" id="serviceSearch" placeholder="Cari layanan, contoh: domisili, usaha, kelahiran..." aria-label="Cari layanan administrasi">
+          </div>
+          <span class="service-count" id="serviceCount" aria-live="polite">6 layanan tersedia</span>
+        </div>
+
+        <div class="service-grid reveal-up" id="serviceGrid">
+          <article class="service-card" data-keywords="domisili tempat tinggal">
+            <button type="button" class="service-card-trigger" aria-expanded="false">
+              <span class="service-icon">🏠</span>
+              <h3>Surat Keterangan Domisili</h3>
+              <span class="service-toggle" aria-hidden="true">+</span>
+            </button>
             <p>Pengurusan surat keterangan tempat tinggal untuk keperluan administrasi warga.</p>
+            <div class="service-extra">
+              <span class="service-extra-label">Syarat umum</span>
+              <ul>
+                <li>KTP dan Kartu Keluarga</li>
+                <li>Pengantar dari RT/RW setempat</li>
+              </ul>
+            </div>
           </article>
 
-          <article class="service-card animate-on-scroll">
-            <h3>Surat Keterangan Usaha</h3>
+          <article class="service-card" data-keywords="usaha legalisasi umkm">
+            <button type="button" class="service-card-trigger" aria-expanded="false">
+              <span class="service-icon">🧾</span>
+              <h3>Surat Keterangan Usaha</h3>
+              <span class="service-toggle" aria-hidden="true">+</span>
+            </button>
             <p>Legalisasi usaha masyarakat desa untuk kebutuhan administrasi dan usaha.</p>
+            <div class="service-extra">
+              <span class="service-extra-label">Syarat umum</span>
+              <ul>
+                <li>KTP pemilik usaha</li>
+                <li>Keterangan lokasi usaha</li>
+              </ul>
+            </div>
           </article>
 
-          <article class="service-card animate-on-scroll">
-            <h3>Surat Keterangan Kematian</h3>
+          <article class="service-card" data-keywords="kematian meninggal">
+            <button type="button" class="service-card-trigger" aria-expanded="false">
+              <span class="service-icon">🕊️</span>
+              <h3>Surat Keterangan Kematian</h3>
+              <span class="service-toggle" aria-hidden="true">+</span>
+            </button>
             <p>Administrasi data kematian penduduk dan pengurusan dokumen pendukung.</p>
+            <div class="service-extra">
+              <span class="service-extra-label">Syarat umum</span>
+              <ul>
+                <li>KTP dan KK almarhum/almarhumah</li>
+                <li>Keterangan dari pihak keluarga</li>
+              </ul>
+            </div>
           </article>
 
-          <article class="service-card animate-on-scroll">
-            <h3>Surat Pengantar</h3>
+          <article class="service-card" data-keywords="pengantar lanjutan">
+            <button type="button" class="service-card-trigger" aria-expanded="false">
+              <span class="service-icon">✉️</span>
+              <h3>Surat Pengantar</h3>
+              <span class="service-toggle" aria-hidden="true">+</span>
+            </button>
             <p>Surat pengantar untuk berbagai kebutuhan administrasi lanjutan warga.</p>
+            <div class="service-extra">
+              <span class="service-extra-label">Syarat umum</span>
+              <ul>
+                <li>KTP dan Kartu Keluarga</li>
+                <li>Keterangan tujuan pengurusan</li>
+              </ul>
+            </div>
           </article>
 
-          <article class="service-card animate-on-scroll">
-            <h3>Surat Keterangan Kelahiran</h3>
+          <article class="service-card" data-keywords="kelahiran bayi lahir">
+            <button type="button" class="service-card-trigger" aria-expanded="false">
+              <span class="service-icon">👶</span>
+              <h3>Surat Keterangan Kelahiran</h3>
+              <span class="service-toggle" aria-hidden="true">+</span>
+            </button>
             <p>Layanan administrasi kelahiran bayi sebagai dasar pengurusan dokumen keluarga.</p>
+            <div class="service-extra">
+              <span class="service-extra-label">Syarat umum</span>
+              <ul>
+                <li>Keterangan kelahiran dari bidan/RS</li>
+                <li>Kartu Keluarga orang tua</li>
+              </ul>
+            </div>
           </article>
 
-          <article class="service-card animate-on-scroll">
-            <h3>Surat Keterangan Tidak Mampu</h3>
+          <article class="service-card" data-keywords="tidak mampu bantuan sosial">
+            <button type="button" class="service-card-trigger" aria-expanded="false">
+              <span class="service-icon">🤲</span>
+              <h3>Surat Keterangan Tidak Mampu</h3>
+              <span class="service-toggle" aria-hidden="true">+</span>
+            </button>
             <p>Surat untuk kebutuhan bantuan sosial, pendidikan, dan keperluan lainnya.</p>
+            <div class="service-extra">
+              <span class="service-extra-label">Syarat umum</span>
+              <ul>
+                <li>KTP dan Kartu Keluarga</li>
+                <li>Keterangan dari RT/RW setempat</li>
+              </ul>
+            </div>
           </article>
         </div>
 
-        <div class="content-card animate-on-scroll">
+        <p class="service-empty" id="serviceEmpty" hidden>Tidak ada layanan yang cocok dengan pencarian Anda.</p>
+
+        <div class="content-card reveal-up">
           <h3>Informasi Layanan</h3>
           <p>
             Untuk layanan online, masyarakat dapat mengakses sistem melalui menu admin sesuai kebutuhan operator desa. Untuk layanan offline, warga dapat datang langsung ke kantor desa dengan membawa persyaratan administrasi yang diperlukan.
@@ -240,16 +449,16 @@
       </div>
     </section>
 
-    <section class="section" id="kontak">
+    <section class="section section-soft" id="kontak">
       <div class="container">
-        <div class="section-head">
+        <div class="section-head reveal-up">
           <p class="section-kicker">Kontak & Lokasi</p>
           <h2>Informasi Pelayanan</h2>
           <p class="section-text">Hubungi kantor desa untuk kebutuhan informasi, pelayanan administrasi, dan pengaduan masyarakat.</p>
         </div>
 
-        <div class="contact-grid">
-          <article class="contact-card animate-on-scroll">
+        <div class="contact-grid reveal-up">
+          <article class="contact-card">
             <h3>Alamat Kantor</h3>
             <p>
               Kantor Desa Motabang<br>
@@ -259,21 +468,29 @@
             </p>
           </article>
 
-          <article class="contact-card animate-on-scroll">
+          <article class="contact-card">
             <h3>Jam Pelayanan</h3>
+            <div class="open-status" id="openStatus">
+              <span class="open-status-dot" id="openStatusDot"></span>
+              <span id="openStatusText">Memeriksa jam layanan...</span>
+            </div>
             <div class="schedule-list">
-              <div class="schedule-item"><span>Senin - Jumat</span><strong>08.00 - 16.00</strong></div>
-              <div class="schedule-item"><span>Sabtu</span><strong>08.00 - 12.00</strong></div>
-              <div class="schedule-item"><span>Minggu</span><strong>Tutup</strong></div>
+              <div class="schedule-item" data-day="1"><span>Senin - Jumat</span><strong>08.00 - 16.00</strong></div>
+              <div class="schedule-item" data-day="6"><span>Sabtu</span><strong>08.00 - 12.00</strong></div>
+              <div class="schedule-item" data-day="0"><span>Minggu</span><strong>Tutup</strong></div>
             </div>
           </article>
 
-          <article class="contact-card animate-on-scroll">
+          <article class="contact-card">
             <h3>Kontak</h3>
             <div class="contact-list">
               <div class="contact-item"><span>Email</span><strong>-</strong></div>
               <div class="contact-item"><span>Telepon</span><strong>0851-6159-0920</strong></div>
               <div class="contact-item"><span>Layanan</span><strong>Kantor Desa</strong></div>
+            </div>
+            <div class="contact-quick-actions">
+              <a href="tel:085161590920" class="btn btn-secondary btn-sm">📞 Telepon Sekarang</a>
+              <button type="button" class="btn btn-secondary btn-sm" id="copyPhoneBtn" data-phone="0851-6159-0920">📋 Salin Nomor</button>
             </div>
           </article>
         </div>
@@ -294,6 +511,7 @@
       <div class="footer-links">
         <a href="#beranda">Beranda</a>
         <a href="#profil">Profil</a>
+        <a href="#peta">Peta Dusun</a>
         <a href="#statistik">Statistik</a>
         <a href="#layanan">Layanan</a>
         <a href="#kontak">Kontak</a>
@@ -306,6 +524,8 @@
   </footer>
 
   <button id="backToTop" class="back-to-top" aria-label="Kembali ke atas">↑</button>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="js/index.js"></script>
 </body>

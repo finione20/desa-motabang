@@ -1,3 +1,5 @@
+const THEME_KEY = "desa_motabang_theme";
+
 function safeStorage(action, key, value = null) {
   try {
     if (action === "get") return window.localStorage.getItem(key);
@@ -15,6 +17,37 @@ const API_URL =
   window.location.hostname === "127.0.0.1"
     ? "http://localhost:3000/api"
     : "/api";
+
+/* ---------------- Theme (gelap / terang) ---------------- */
+function initTheme() {
+  const toggle = document.getElementById("themeToggle");
+  const root = document.documentElement;
+
+  const saved = safeStorage("get", THEME_KEY);
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const initial = saved || (prefersDark ? "dark" : "light");
+
+  applyTheme(initial);
+
+  if (!toggle) return;
+
+  toggle.addEventListener("click", function () {
+    const current = root.getAttribute("data-theme") === "dark" ? "dark" : "light";
+    const next = current === "dark" ? "light" : "dark";
+    applyTheme(next);
+    safeStorage("set", THEME_KEY, next);
+  });
+
+  function applyTheme(mode) {
+    if (mode === "dark") {
+      root.setAttribute("data-theme", "dark");
+      toggle.setAttribute("aria-pressed", "true");
+    } else {
+      root.removeAttribute("data-theme");
+      toggle.setAttribute("aria-pressed", "false");
+    }
+  }
+}
 
 function togglePassword() {
   const input = document.getElementById("password");
@@ -132,7 +165,47 @@ async function login() {
   }
 }
 
+/* ---------------- Sequence intro "Gerbang Desa" ---------------- */
+function initGateIntro() {
+  const body = document.body;
+  const gateIntro = document.getElementById("gateIntro");
+  const loginShell = document.getElementById("loginShell");
+
+  if (!gateIntro || !loginShell) {
+    body.classList.remove("is-entering");
+    return;
+  }
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (reduceMotion) {
+    body.classList.remove("is-entering");
+    gateIntro.classList.add("gate-hidden");
+    loginShell.classList.add("gate-open", "content-revealed");
+    return;
+  }
+
+  // Tahap 1: logo + ring tampil sendirian (durasi diatur lewat CSS animation di gateIntro)
+  // Tahap 2: setelah jeda, gerbang (gateIntro) memudar dan dua panel terbuka
+  const GATE_HOLD_MS = 1500;
+  const PANEL_OPEN_MS = 850;
+
+  setTimeout(() => {
+    gateIntro.classList.add("gate-hidden");
+    loginShell.classList.add("gate-open");
+    body.classList.remove("is-entering");
+
+    // Tahap 3: setelah daun gerbang terbuka, item form muncul satu per satu
+    setTimeout(() => {
+      loginShell.classList.add("content-revealed");
+    }, PANEL_OPEN_MS * 0.4);
+  }, GATE_HOLD_MS);
+}
+
 document.addEventListener("DOMContentLoaded", function () {
+  initGateIntro();
+  initTheme();
+
   const inputs = document.querySelectorAll("#username, #password");
 
   inputs.forEach((input) => {
@@ -146,12 +219,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const usernameInput = document.getElementById("username");
   if (usernameInput) {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const focusDelay = reduceMotion ? 50 : 2050;
     setTimeout(() => {
       try {
         usernameInput.focus();
       } catch (error) {
         console.warn("Autofocus diblokir browser:", error);
       }
-    }, 50);
+    }, focusDelay);
   }
 });

@@ -4,12 +4,61 @@ const API_URL =
     ? "http://localhost:3000/api"
     : "/api";
 
+const THEME_KEY = "desa_motabang_theme";
+
 document.addEventListener("DOMContentLoaded", function () {
+  initTheme();
   initYear();
   loadUserInfo();
   loadQuickStats();
   setGreeting();
+  initMenuTilt();
 });
+
+function prefersReducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+/* ---------------- Theme (gelap / terang) ---------------- */
+function initTheme() {
+  const toggle = document.getElementById("themeToggle");
+  const root = document.documentElement;
+
+  let saved = null;
+  try {
+    saved = localStorage.getItem(THEME_KEY);
+  } catch (error) {
+    saved = null;
+  }
+
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const initial = saved || (prefersDark ? "dark" : "light");
+
+  applyTheme(initial);
+
+  if (!toggle) return;
+
+  toggle.addEventListener("click", function () {
+    const current = root.getAttribute("data-theme") === "dark" ? "dark" : "light";
+    const next = current === "dark" ? "light" : "dark";
+    applyTheme(next);
+    try {
+      localStorage.setItem(THEME_KEY, next);
+    } catch (error) {
+      /* abaikan jika storage tidak tersedia */
+    }
+  });
+
+  function applyTheme(mode) {
+    if (mode === "dark") {
+      root.setAttribute("data-theme", "dark");
+      toggle.setAttribute("aria-pressed", "true");
+    } else {
+      root.removeAttribute("data-theme");
+      toggle.setAttribute("aria-pressed", "false");
+    }
+  }
+}
 
 function initYear() {
   const yearElement = document.getElementById("year");
@@ -38,24 +87,37 @@ function loadUserInfo() {
   }
 }
 
+/* ---------------- Sapaan dengan orb visual matahari/bulan ---------------- */
 function setGreeting() {
   const greetingBadge = document.getElementById("greetingBadge");
-  if (!greetingBadge) return;
+  const greetingText = document.getElementById("greetingText");
+  const greetingOrb = document.getElementById("greetingOrb");
+  if (!greetingBadge || !greetingText) return;
 
   const hour = new Date().getHours();
   let greeting = "Selamat Datang";
+  let orbGradient = "radial-gradient(circle at 35% 30%, #ffe39a, #f3b431)";
 
   if (hour >= 5 && hour < 12) {
     greeting = "Selamat Pagi";
+    orbGradient = "radial-gradient(circle at 35% 30%, #fff3b0, #f7b733)";
   } else if (hour >= 12 && hour < 15) {
     greeting = "Selamat Siang";
+    orbGradient = "radial-gradient(circle at 35% 30%, #ffe39a, #f3941f)";
   } else if (hour >= 15 && hour < 18) {
     greeting = "Selamat Sore";
+    orbGradient = "radial-gradient(circle at 35% 30%, #ffc18a, #e8743b)";
   } else {
     greeting = "Selamat Malam";
+    orbGradient = "radial-gradient(circle at 35% 30%, #cfd9ff, #4a5b9e)";
   }
 
-  greetingBadge.textContent = greeting;
+  greetingText.textContent = greeting;
+
+  if (greetingOrb) {
+    greetingOrb.style.setProperty("--greeting-orb-bg", orbGradient);
+    greetingOrb.style.background = orbGradient;
+  }
 }
 
 async function loadQuickStats() {
@@ -64,6 +126,7 @@ async function loadQuickStats() {
 
 async function loadPendudukStats() {
   const totalElement = document.getElementById("totalPenduduk");
+  const ringElement = document.getElementById("ringPenduduk");
   if (!totalElement) return;
 
   totalElement.classList.add("loading");
@@ -76,6 +139,7 @@ async function loadPendudukStats() {
     const data = await response.json();
     totalElement.classList.remove("loading");
     animateCounter(totalElement, 0, data.total || 0, 1200);
+    fillStatRing(ringElement, data.total || 0);
   } catch (error) {
     console.error("Error loading penduduk stats:", error);
     totalElement.classList.remove("loading");
@@ -85,6 +149,7 @@ async function loadPendudukStats() {
 
 async function loadRegisterStats() {
   const totalElement = document.getElementById("totalSurat");
+  const ringElement = document.getElementById("ringSurat");
   if (!totalElement) return;
 
   totalElement.classList.add("loading");
@@ -98,6 +163,7 @@ async function loadRegisterStats() {
     const data = await response.json();
     totalElement.classList.remove("loading");
     animateCounter(totalElement, 0, data.total || 0, 1200);
+    fillStatRing(ringElement, data.total || 0);
   } catch (error) {
     console.error("Error loading register stats:", error);
     totalElement.classList.remove("loading");
@@ -105,8 +171,32 @@ async function loadRegisterStats() {
   }
 }
 
+/* Mengisi ring statistik. Karena ini bukan persentase dari suatu total yang
+   diketahui, ring dipakai sebagai elemen visual "terisi penuh begitu data
+   berhasil dimuat" — bukan representasi proporsi. */
+function fillStatRing(ringElement, value) {
+  if (!ringElement) return;
+
+  const hasValue = Number(value) > 0;
+  const circumference = 100.5;
+  const offset = hasValue ? 0 : circumference;
+
+  if (prefersReducedMotion()) {
+    ringElement.style.transition = "none";
+  }
+
+  requestAnimationFrame(() => {
+    ringElement.style.strokeDashoffset = offset;
+  });
+}
+
 function animateCounter(element, start, end, duration) {
   if (!element) return;
+
+  if (prefersReducedMotion()) {
+    element.textContent = Number(end || 0).toLocaleString("id-ID");
+    return;
+  }
 
   const startTime = performance.now();
 
@@ -124,6 +214,39 @@ function animateCounter(element, start, end, duration) {
   }
 
   requestAnimationFrame(updateCounter);
+}
+
+/* ---------------- Tilt 3D halus pada kartu menu ---------------- */
+function initMenuTilt() {
+  if (prefersReducedMotion()) return;
+
+  const cards = document.querySelectorAll(".menu-card[data-tilt]");
+  if (!cards.length) return;
+
+  const MAX_TILT = 6;
+
+  cards.forEach((card) => {
+    card.addEventListener("pointermove", function (e) {
+      if (e.pointerType === "touch") return;
+
+      const rect = card.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top) / rect.height;
+
+      const rx = (x - 0.5) * MAX_TILT * 2;
+      const ry = (0.5 - y) * MAX_TILT * 2;
+
+      card.style.setProperty("--rx", `${rx}deg`);
+      card.style.setProperty("--ry", `${ry}deg`);
+      card.style.setProperty("--mx", `${x * 100}%`);
+      card.style.setProperty("--my", `${y * 100}%`);
+    });
+
+    card.addEventListener("pointerleave", function () {
+      card.style.setProperty("--rx", "0deg");
+      card.style.setProperty("--ry", "0deg");
+    });
+  });
 }
 
 function logout() {

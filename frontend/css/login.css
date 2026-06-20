@@ -22,6 +22,32 @@
   --radius-lg: 22px;
   --radius-md: 16px;
   --radius-sm: 12px;
+  --font-display: "Fraunces", "Plus Jakarta Sans", serif;
+  --font-body: "Plus Jakarta Sans", sans-serif;
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  --bg: #0e1812;
+  --bg-accent: #14211a;
+  --surface: rgba(20, 32, 25, 0.78);
+  --surface-strong: #142019;
+  --line: #243329;
+  --line-strong: #324337;
+  --text: #eaf2ec;
+  --text-muted: #93a59a;
+  --primary: #5ba97c;
+  --primary-hover: #75c294;
+  --primary-soft: #1a2b21;
+  --success-bg: #102a1c;
+  --success-text: #4ade8c;
+  --success-line: #1f4d33;
+  --danger-bg: #2a1715;
+  --danger-text: #ff8a80;
+  --danger-line: #4d2521;
+  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.42);
+  color-scheme: dark;
 }
 
 * {
@@ -36,22 +62,229 @@ body {
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: var(--font-body);
   color: var(--text);
   background:
-    radial-gradient(circle at top left, rgba(47, 107, 69, 0.12), transparent 28%),
-    radial-gradient(circle at bottom right, rgba(67, 160, 71, 0.12), transparent 24%),
-    linear-gradient(180deg, #f5f8f5 0%, var(--bg) 100%);
+    radial-gradient(circle at top left, color-mix(in srgb, var(--primary) 12%, transparent), transparent 28%),
+    radial-gradient(circle at bottom right, color-mix(in srgb, var(--primary) 12%, transparent), transparent 24%),
+    linear-gradient(180deg, color-mix(in srgb, var(--surface-strong) 60%, var(--bg)) 0%, var(--bg) 100%);
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 button,
 input {
   font: inherit;
+  color: inherit;
 }
 
 button {
   border: none;
   background: none;
+  cursor: pointer;
+}
+
+/* ================= Gerbang pembuka (intro sequence) ================= */
+/* Logo muncul sendiri di tengah, ring melingkar "menggambar" dirinya,
+   lalu seluruh tampilan terbuka seperti dua daun gerbang desa. */
+
+body.is-entering {
+  overflow: hidden;
+}
+
+.gate-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  background: linear-gradient(180deg, #132019 0%, #0c150f 100%);
+  opacity: 1;
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+
+.gate-intro.gate-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.gate-ring {
+  position: relative;
+  width: 168px;
+  height: 168px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gate-ring-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.gate-ring-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 2.5;
+}
+
+.gate-ring-draw {
+  fill: none;
+  stroke: #6fc492;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dasharray: 578;
+  stroke-dashoffset: 578;
+  animation: gate-draw-ring 1.4s cubic-bezier(0.65, 0, 0.35, 1) 0.15s forwards;
+}
+
+.gate-logo-wrap {
+  position: relative;
+  width: 112px;
+  height: 112px;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.96);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  transform: scale(0.72);
+  animation: gate-logo-pop 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.1s forwards;
+}
+
+.gate-logo-img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+}
+
+.gate-caption {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  opacity: 0;
+  animation: gate-caption-fade 0.6s ease 0.9s forwards;
+}
+
+@keyframes gate-logo-pop {
+  0% { opacity: 0; transform: scale(0.72); }
+  60% { opacity: 1; transform: scale(1.04); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes gate-draw-ring {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes gate-caption-fade {
+  to { opacity: 1; }
+}
+
+/* Daun gerbang: panel kiri & kanan terbuka dari tengah seperti pintu desa */
+.gate-leaf {
+  display: grid;
+  height: 100%;
+  opacity: 0;
+}
+
+.gate-leaf-left {
+  transform: translateX(-100%) rotateY(-8deg);
+  transform-origin: left center;
+}
+
+.gate-leaf-right {
+  transform: translateX(100%) rotateY(8deg);
+  transform-origin: right center;
+}
+
+.login-shell.gate-open .gate-leaf {
+  opacity: 1;
+  transform: translateX(0) rotateY(0deg);
+  transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.7s ease;
+}
+
+.login-shell.gate-open .gate-leaf-right {
+  transition-delay: 0.08s;
+}
+
+/* Item-item form muncul satu per satu setelah gerbang terbuka */
+.reveal-item {
+  opacity: 0;
+  transform: translateY(14px);
+}
+
+.login-shell.content-revealed .reveal-item {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  transition-delay: calc(var(--ri, 0) * 70ms);
+}
+
+/* Saat reduced motion: lewati seluruh sequence, tampil langsung */
+@media (prefers-reduced-motion: reduce) {
+  .gate-intro {
+    display: none;
+  }
+
+  .gate-leaf,
+  .reveal-item {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Theme toggle ---------- */
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 50;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--surface-strong);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  box-shadow: var(--shadow-soft);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.theme-toggle:hover {
+  background: var(--primary-soft);
+}
+
+.theme-toggle:hover,
+.theme-toggle:focus-visible {
+  transform: translateY(-1px);
+}
+
+.theme-toggle:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--primary) 35%, transparent);
+  outline-offset: 2px;
+}
+
+.theme-toggle .icon-moon {
+  display: none;
+}
+
+html[data-theme="dark"] .theme-toggle .icon-sun {
+  display: none;
+}
+
+html[data-theme="dark"] .theme-toggle .icon-moon {
+  display: block;
 }
 
 .login-page {
@@ -60,6 +293,7 @@ button {
   flex-direction: column;
   justify-content: center;
   padding: 32px 20px;
+  perspective: 1800px;
 }
 
 .login-shell {
@@ -71,17 +305,18 @@ button {
   border-radius: var(--radius-xl);
   overflow: hidden;
   background: var(--surface);
-  border: 1px solid rgba(255, 255, 255, 0.72);
+  border: 1px solid color-mix(in srgb, var(--surface-strong) 72%, transparent);
   box-shadow: var(--shadow-lg);
   backdrop-filter: blur(18px);
 }
 
 .brand-panel {
+  height: 100%;
   padding: 56px 52px;
   background:
-    linear-gradient(180deg, rgba(47, 107, 69, 0.08), rgba(47, 107, 69, 0.03)),
-    linear-gradient(135deg, #f8fbf8 0%, #eef5ef 100%);
-  border-right: 1px solid rgba(47, 107, 69, 0.08);
+    linear-gradient(180deg, color-mix(in srgb, var(--primary) 8%, transparent), color-mix(in srgb, var(--primary) 3%, transparent)),
+    linear-gradient(135deg, color-mix(in srgb, var(--surface-strong) 96%, var(--bg)) 0%, var(--bg-accent) 100%);
+  border-right: 1px solid color-mix(in srgb, var(--primary) 8%, transparent);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -112,9 +347,9 @@ button {
   width: 108px;
   height: 108px;
   border-radius: 28px;
-  background: rgba(255, 255, 255, 0.88);
+  background: color-mix(in srgb, var(--surface-strong) 88%, transparent);
   box-shadow: var(--shadow-soft);
-  border: 1px solid rgba(47, 107, 69, 0.08);
+  border: 1px solid color-mix(in srgb, var(--primary) 8%, transparent);
 }
 
 .logo-img {
@@ -137,9 +372,11 @@ button {
 }
 
 .brand-title {
+  font-family: var(--font-display);
+  font-weight: 600;
   font-size: clamp(32px, 5vw, 46px);
   line-height: 1.08;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.02em;
   margin-bottom: 16px;
 }
 
@@ -152,6 +389,7 @@ button {
 
 .login-card {
   background: var(--surface-strong);
+  height: 100%;
   padding: 56px 44px;
   display: flex;
   flex-direction: column;
@@ -172,9 +410,11 @@ button {
 }
 
 .card-header h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
   font-size: 32px;
   line-height: 1.14;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.01em;
   margin-bottom: 10px;
 }
 
@@ -210,7 +450,7 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #7d8b82;
+  color: var(--text-muted);
   pointer-events: none;
   z-index: 2;
 }
@@ -231,7 +471,7 @@ button {
   height: 56px;
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  background: #fbfcfb;
+  background: color-mix(in srgb, var(--surface-strong) 96%, var(--bg));
   color: var(--text);
   padding: 0 16px 0 48px;
   font-size: 15px;
@@ -240,18 +480,19 @@ button {
 }
 
 .input-wrapper input::placeholder {
-  color: #97a39a;
+  color: var(--text-muted);
+  opacity: 0.8;
 }
 
 .input-wrapper input:hover {
   border-color: var(--line-strong);
-  background: #ffffff;
+  background: var(--surface-strong);
 }
 
 .input-wrapper input:focus {
   border-color: var(--primary);
-  background: #ffffff;
-  box-shadow: 0 0 0 4px rgba(47, 107, 69, 0.10);
+  background: var(--surface-strong);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 10%, transparent);
 }
 
 .password-wrapper input {
@@ -269,7 +510,7 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #7d8b82;
+  color: var(--text-muted);
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease;
   z-index: 3;
@@ -277,7 +518,7 @@ button {
 
 .toggle-password:hover,
 .toggle-password.is-visible {
-  background: #f2f6f3;
+  background: var(--primary-soft);
   color: var(--primary);
 }
 
@@ -296,14 +537,14 @@ button {
   justify-content: center;
   gap: 10px;
   cursor: pointer;
-  box-shadow: 0 16px 28px rgba(47, 107, 69, 0.22);
+  box-shadow: 0 16px 28px color-mix(in srgb, var(--primary) 22%, transparent);
   transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 }
 
 .btn-login:hover:not(:disabled) {
   background: var(--primary-hover);
   transform: translateY(-1px);
-  box-shadow: 0 20px 34px rgba(37, 86, 57, 0.22);
+  box-shadow: 0 20px 34px color-mix(in srgb, var(--primary-hover) 22%, transparent);
 }
 
 .btn-login:active:not(:disabled) {
@@ -363,7 +604,7 @@ button {
 .footer-section {
   text-align: center;
   margin-top: 22px;
-  color: #6a786f;
+  color: var(--text-muted);
   font-size: 13px;
 }
 
@@ -394,7 +635,7 @@ button {
   .brand-panel {
     padding: 36px 32px 24px;
     border-right: none;
-    border-bottom: 1px solid rgba(47, 107, 69, 0.08);
+    border-bottom: 1px solid color-mix(in srgb, var(--primary) 8%, transparent);
     gap: 22px;
   }
 
@@ -410,6 +651,11 @@ button {
 @media (max-width: 560px) {
   .login-page {
     padding: 16px;
+  }
+
+  .theme-toggle {
+    top: 14px;
+    right: 14px;
   }
 
   .login-shell {
@@ -450,5 +696,30 @@ button {
   .input-wrapper input,
   .btn-login {
     height: 52px;
+  }
+
+  .gate-ring {
+    width: 128px;
+    height: 128px;
+  }
+
+  .gate-logo-wrap {
+    width: 88px;
+    height: 88px;
+    border-radius: 22px;
+  }
+
+  .gate-logo-img {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
   }
 }
