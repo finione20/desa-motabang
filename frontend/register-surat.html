@@ -6,10 +6,15 @@
   <title>Register Surat | Desa Motabang</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/register-surat.css">
 </head>
 <body>
+  <button type="button" class="theme-toggle" id="themeToggle" aria-label="Ganti tampilan gelap atau terang" aria-pressed="false">
+    <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg>
+    <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+  </button>
+
   <div class="wrapper">
     <header class="topbar">
       <div class="topbar-inner">
@@ -18,7 +23,7 @@
             <img src="assets/logodesa.png" alt="Logo Desa Motabang">
           </div>
           <div class="brand-copy">
-            <p class="eyebrow">Administrasi Surat</p>
+            <p class="eyebrow"><span class="pulse-dot" aria-hidden="true"></span> Administrasi Surat</p>
             <h1>Register Surat Desa Motabang</h1>
             <p>Kelola pencatatan surat masuk dan keluar dengan format yang lebih rapi dan modern.</p>
           </div>
@@ -32,28 +37,42 @@
     </header>
 
     <main class="container">
-      <section class="stats-grid">
+      <section class="stats-grid reveal-up" style="--d:0">
         <article class="stat-card">
-          <span class="stat-label">Total Surat</span>
+          <div class="stat-card-top">
+            <span class="stat-label">Total Surat</span>
+            <svg class="stat-ring" width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
+              <circle cx="20" cy="20" r="16" class="stat-ring-track"></circle>
+              <circle cx="20" cy="20" r="16" class="stat-ring-fill" id="ringTotalSurat"></circle>
+            </svg>
+          </div>
           <strong class="stat-value" id="totalSurat">0</strong>
           <span class="stat-note">Seluruh data register</span>
         </article>
 
         <article class="stat-card">
-          <span class="stat-label">Bulan Ini</span>
+          <div class="stat-card-top">
+            <span class="stat-label">Bulan Ini</span>
+            <svg class="stat-ring" width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
+              <circle cx="20" cy="20" r="16" class="stat-ring-track"></circle>
+              <circle cx="20" cy="20" r="16" class="stat-ring-fill" id="ringBulanIni"></circle>
+            </svg>
+          </div>
           <strong class="stat-value" id="bulanIni">0</strong>
           <span class="stat-note">Register pada bulan berjalan</span>
         </article>
 
         <article class="stat-card">
-          <span class="stat-label">Nomor Terakhir</span>
+          <div class="stat-card-top">
+            <span class="stat-label">Nomor Terakhir</span>
+          </div>
           <strong class="stat-value stat-value-small" id="nomorTerakhir">-</strong>
           <span class="stat-note">Nomor surat terbaru</span>
         </article>
       </section>
 
       <section class="panel-grid">
-        <article class="panel-card form-panel">
+        <article class="panel-card form-panel reveal-up" style="--d:1">
           <div class="panel-head">
             <p class="panel-kicker">Input Data</p>
             <h2>Tambah Register Surat</h2>
@@ -85,6 +104,7 @@
               <div class="form-group form-group-full">
                 <label for="perihal">Perihal <span class="required">*</span></label>
                 <input type="text" id="perihal" placeholder="Contoh: Permohonan surat keterangan" required>
+                <svg class="field-check" id="checkPerihal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
               </div>
 
               <div class="form-group form-group-full">
@@ -95,8 +115,13 @@
 
             <div class="preview-box">
               <div class="preview-copy">
-                <span class="preview-label">Preview Nomor Surat</span>
-                <strong class="preview-value" id="previewNomor">Pilih jenis surat dan tanggal untuk melihat preview</strong>
+                <span class="preview-label">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg>
+                  Preview Nomor Surat
+                </span>
+                <div class="preview-segments" id="previewSegments">
+                  <span class="seg placeholder">Pilih jenis surat dan tanggal untuk melihat preview</span>
+                </div>
                 <span class="preview-note">Nomor final dibuat otomatis saat data disimpan.</span>
               </div>
             </div>
@@ -108,7 +133,7 @@
           </form>
         </article>
 
-        <article class="panel-card side-panel">
+        <article class="panel-card side-panel reveal-up" style="--d:2">
           <div class="panel-head">
             <p class="panel-kicker">Pencarian</p>
             <h2>Filter Register</h2>
@@ -123,18 +148,46 @@
 
             <div class="form-group">
               <label for="searchSurat">Cari Surat</label>
-              <input type="text" id="searchSurat" placeholder="Cari nomor, perihal, atau nama..." oninput="handleSearch()">
+              <div class="search-wrap">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+                <input type="text" id="searchSurat" placeholder="Cari nomor, perihal, atau nama..." oninput="handleSearch()">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Jenis Surat</label>
+              <div class="chip-row">
+                <button type="button" class="chip active" data-jenis="" onclick="setJenisChip('', this)">Semua</button>
+                <button type="button" class="chip" data-jenis="SKTM" onclick="setJenisChip('SKTM', this)">SKTM</button>
+                <button type="button" class="chip" data-jenis="SKU" onclick="setJenisChip('SKU', this)">SKU</button>
+                <button type="button" class="chip" data-jenis="SKD" onclick="setJenisChip('SKD', this)">SKD</button>
+                <button type="button" class="chip" data-jenis="DOM" onclick="setJenisChip('DOM', this)">Domisili</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="side-divider"></div>
+
+          <div class="mini-legend">
+            <div class="mini-legend-item">
+              <span class="mini-legend-dot" style="background:var(--primary)"></span>
+              Tekan <kbd>Alt</kbd>+<kbd>F</kbd> untuk fokus ke pencarian
+            </div>
+            <div class="mini-legend-item">
+              <span class="mini-legend-dot" style="background:var(--blue-text)"></span>
+              Tekan <kbd>Alt</kbd>+<kbd>N</kbd> untuk mulai input baru
             </div>
           </div>
         </article>
       </section>
 
-      <section class="panel-card table-panel">
+      <section class="panel-card table-panel reveal-up" style="--d:3">
         <div class="table-top">
           <div>
             <p class="panel-kicker">Data Register</p>
             <h2>Daftar Surat</h2>
           </div>
+          <span class="table-meta" id="tableMeta"></span>
         </div>
 
         <div class="table-wrapper">
@@ -142,11 +195,11 @@
             <thead>
               <tr>
                 <th>No</th>
-                <th>Nomor Surat</th>
-                <th>Tanggal</th>
+                <th class="sortable" data-sort-key="nomor_surat">Nomor Surat <span class="sort-arrow">▾</span></th>
+                <th class="sortable" data-sort-key="tanggal_surat">Tanggal <span class="sort-arrow">▾</span></th>
                 <th>Jenis</th>
                 <th>Perihal</th>
-                <th>Bersangkutan</th>
+                <th class="sortable" data-sort-key="bersangkutan">Bersangkutan <span class="sort-arrow">▾</span></th>
                 <th>Aksi</th>
               </tr>
             </thead>
@@ -164,6 +217,8 @@
           <button class="btn-page" id="nextBtn" onclick="changePage(1)">Berikutnya</button>
         </div>
       </section>
+
+      <p class="kbd-hint">Tips: <kbd>Alt</kbd>+<kbd>N</kbd> input baru &middot; <kbd>Alt</kbd>+<kbd>F</kbd> cari surat &middot; <kbd>Alt</kbd>+<kbd>Q</kbd> logout</p>
     </main>
   </div>
 
@@ -215,7 +270,7 @@
 
           <div class="modal-footer">
             <button type="button" class="btn btn-ghost" onclick="closeModal()">Batal</button>
-            <button type="button" class="btn btn-primary" onclick="updateRegister()">Simpan Perubahan</button>
+            <button type="button" class="btn btn-primary" id="btnUpdate" onclick="updateRegister()">Simpan Perubahan</button>
           </div>
         </form>
       </div>
@@ -223,7 +278,8 @@
   </div>
 
   <div id="notification" class="notification">
-    <div id="notificationMessage"></div>
+    <span class="notification-icon" id="notificationIcon"></span>
+    <div class="notification-text" id="notificationMessage"></div>
   </div>
 
   <script src="js/register-surat.js"></script>

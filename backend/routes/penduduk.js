@@ -382,6 +382,139 @@ router.get("/stats", async (req, res) => {
 });
 
 /* =====================================================
+   GET DETAILED STATISTICS FOR DASHBOARD CHARTS
+===================================================== */
+router.get("/stats/detail", async (req, res) => {
+  try {
+    // --- Per Dusun ---
+    const dusunSql = `
+      SELECT
+        dusun,
+        COUNT(*)::int AS jumlah_penduduk,
+        COUNT(DISTINCT CASE WHEN kode_keluarga IS NOT NULL AND TRIM(kode_keluarga) != '' THEN kode_keluarga END)::int AS jumlah_kk,
+        SUM(CASE WHEN LOWER(TRIM(jenis_kelamin)) IN ('l','lk','laki','laki-laki','laki laki','pria') THEN 1 ELSE 0 END)::int AS laki,
+        SUM(CASE WHEN LOWER(TRIM(jenis_kelamin)) IN ('p','pr','perempuan','wanita') THEN 1 ELSE 0 END)::int AS perempuan
+      FROM penduduk
+      WHERE dusun IS NOT NULL AND TRIM(dusun) != ''
+      GROUP BY dusun
+      ORDER BY jumlah_penduduk DESC
+    `;
+
+    // --- Usia (rata-rata, termuda, tertua) ---
+    const usiaSummarySql = `
+      SELECT
+        ROUND(AVG(usia))::int AS rata_rata,
+        MIN(usia)::int AS termuda,
+        MAX(usia)::int AS tertua
+      FROM penduduk
+      WHERE usia IS NOT NULL AND usia >= 0 AND usia <= 120
+    `;
+
+    // --- Distribusi usia per kategori ---
+    const usiaKategoriSql = `
+      SELECT
+        SUM(CASE WHEN usia BETWEEN 0 AND 5   THEN 1 ELSE 0 END)::int  AS balita,
+        SUM(CASE WHEN usia BETWEEN 6 AND 12  THEN 1 ELSE 0 END)::int  AS anak,
+        SUM(CASE WHEN usia BETWEEN 13 AND 17 THEN 1 ELSE 0 END)::int  AS remaja,
+        SUM(CASE WHEN usia BETWEEN 18 AND 25 THEN 1 ELSE 0 END)::int  AS dewasa_muda,
+        SUM(CASE WHEN usia BETWEEN 26 AND 45 THEN 1 ELSE 0 END)::int  AS dewasa,
+        SUM(CASE WHEN usia BETWEEN 46 AND 60 THEN 1 ELSE 0 END)::int  AS paruh_baya,
+        SUM(CASE WHEN usia > 60             THEN 1 ELSE 0 END)::int  AS lansia
+      FROM penduduk
+      WHERE usia IS NOT NULL AND usia >= 0 AND usia <= 120
+    `;
+
+    // --- Pekerjaan top 12 ---
+    const pekerjaanSql = `
+      SELECT
+        COALESCE(NULLIF(TRIM(pekerjaan), ''), 'Tidak Diketahui') AS label,
+        COUNT(*)::int AS jumlah
+      FROM penduduk
+      GROUP BY COALESCE(NULLIF(TRIM(pekerjaan), ''), 'Tidak Diketahui')
+      ORDER BY jumlah DESC
+      LIMIT 12
+    `;
+
+    // --- Pendidikan ---
+    const pendidikanSql = `
+      SELECT
+        COALESCE(NULLIF(TRIM(pendidikan), ''), 'Tidak Diketahui') AS label,
+        COUNT(*)::int AS jumlah
+      FROM penduduk
+      GROUP BY COALESCE(NULLIF(TRIM(pendidikan), ''), 'Tidak Diketahui')
+      ORDER BY jumlah DESC
+    `;
+
+    // --- Agama ---
+    const agamaSql = `
+      SELECT
+        COALESCE(NULLIF(TRIM(agama), ''), 'Tidak Diketahui') AS label,
+        COUNT(*)::int AS jumlah
+      FROM penduduk
+      GROUP BY COALESCE(NULLIF(TRIM(agama), ''), 'Tidak Diketahui')
+      ORDER BY jumlah DESC
+    `;
+
+    // --- Status perkawinan ---
+    const statusSql = `
+      SELECT
+        COALESCE(NULLIF(TRIM(status), ''), 'Tidak Diketahui') AS label,
+        COUNT(*)::int AS jumlah
+      FROM penduduk
+      GROUP BY COALESCE(NULLIF(TRIM(status), ''), 'Tidak Diketahui')
+      ORDER BY jumlah DESC
+    `;
+
+    // Run all queries in parallel
+    const [
+      dusunResult,
+      usiaSummaryResult,
+      usiaKategoriResult,
+      pekerjaanResult,
+      pendidikanResult,
+      agamaResult,
+      statusResult,
+    ] = await Promise.all([
+      safeQuery(dusunSql),
+      safeQuery(usiaSummarySql),
+      safeQuery(usiaKategoriSql),
+      safeQuery(pekerjaanSql),
+      safeQuery(pendidikanSql),
+      safeQuery(agamaSql),
+      safeQuery(statusSql),
+    ]);
+
+    const usiaSummary = usiaSummaryResult.rows[0] || {};
+    const usiaKategori = usiaKategoriResult.rows[0] || {};
+
+    return res.json({
+      perDusun: dusunResult.rows,
+      usia: {
+        rataRata: usiaSummary.rata_rata || 0,
+        termuda: usiaSummary.termuda || 0,
+        tertua: usiaSummary.tertua || 0,
+        kategori: {
+          balita:     usiaKategori.balita     || 0,
+          anak:       usiaKategori.anak       || 0,
+          remaja:     usiaKategori.remaja     || 0,
+          dewasaMuda: usiaKategori.dewasa_muda|| 0,
+          dewasa:     usiaKategori.dewasa     || 0,
+          paruhBaya:  usiaKategori.paruh_baya || 0,
+          lansia:     usiaKategori.lansia     || 0,
+        },
+      },
+      pekerjaan: pekerjaanResult.rows,
+      pendidikan: pendidikanResult.rows,
+      agama: agamaResult.rows,
+      statusPerkawinan: statusResult.rows,
+    });
+  } catch (err) {
+    console.error("❌ Detailed stats error:", err);
+    return res.status(500).json({ message: "Gagal mengambil statistik detail" });
+  }
+});
+
+/* =====================================================
    LIST DUSUN
 ===================================================== */
 router.get("/dusun/list", async (req, res) => {

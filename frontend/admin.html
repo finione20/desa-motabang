@@ -6,12 +6,18 @@
   <title>Admin Penduduk | Desa Motabang</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/admin.css">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </head>
 <body>
   <a href="#mainContent" class="skip-link">Lewati ke konten utama</a>
+
+  <button type="button" class="theme-toggle" id="themeToggle" aria-label="Ganti tampilan gelap atau terang" aria-pressed="false">
+    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg>
+    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+  </button>
 
   <div class="mobile-topbar">
     <button
@@ -23,7 +29,7 @@
       aria-expanded="false"
       onclick="toggleSidebar()"
     >
-      ☰
+      <span class="burger" aria-hidden="true"><span></span><span></span><span></span></span>
     </button>
 
     <div class="mobile-topbar-brand">
@@ -49,106 +55,304 @@
         </div>
       </div>
 
-      <nav class="sidebar-nav" aria-label="Menu utama admin">
-        <button class="nav-item active" type="button" onclick="showPage('dashboard', this); closeSidebar();">
-          <span class="nav-icon" aria-hidden="true">□</span>
+      <nav class="sidebar-nav" id="sidebarNavList" aria-label="Menu utama admin">
+        <span class="nav-indicator" id="navIndicator" aria-hidden="true"></span>
+
+        <button class="nav-item active" type="button" data-page="dashboard" onclick="showPage('dashboard', this); closeSidebar();">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="3.5" width="7.5" height="7.5" rx="2" stroke="currentColor" stroke-width="1.7"/><rect x="13" y="3.5" width="7.5" height="7.5" rx="2" stroke="currentColor" stroke-width="1.7"/><rect x="3.5" y="13" width="7.5" height="7.5" rx="2" stroke="currentColor" stroke-width="1.7"/><rect x="13" y="13" width="7.5" height="7.5" rx="2" stroke="currentColor" stroke-width="1.7"/></svg>
+          </span>
           <span class="nav-text">Dashboard</span>
         </button>
 
-        <button class="nav-item" type="button" onclick="showPage('penduduk', this); closeSidebar();">
-          <span class="nav-icon" aria-hidden="true">▣</span>
+        <button class="nav-item" type="button" data-page="penduduk" onclick="showPage('penduduk', this); closeSidebar();">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="1.7"/><path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="17" cy="8.5" r="2.4" stroke="currentColor" stroke-width="1.6" opacity="0.75"/><path d="M14.7 19c.2-2.4 1.9-4 4-4.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity="0.75"/></svg>
+          </span>
           <span class="nav-text">Data Penduduk</span>
+          <span class="nav-count" id="navPendudukCount">0</span>
         </button>
 
         <a class="nav-item nav-link" href="pilih.html">
-          <span class="nav-icon" aria-hidden="true">←</span>
-          <span class="nav-text">Kembali</span>
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M11 5L4.5 12 11 19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 12H19.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </span>
+          <span class="nav-text">Kembali ke Menu</span>
         </a>
       </nav>
 
-      <button class="btn-logout" type="button" onclick="logout()">Logout</button>
+      <div class="sidebar-foot">
+        <div class="sidebar-stamp" aria-hidden="true">
+          <svg viewBox="0 0 60 60" width="34" height="34">
+            <circle cx="30" cy="30" r="27" fill="none" stroke="currentColor" stroke-width="2.2" stroke-dasharray="3 4"/>
+            <circle cx="30" cy="30" r="19" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <text x="30" y="34" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor" font-family="Fraunces, serif">DM</text>
+          </svg>
+          <div>
+            <strong id="clockTime">00:00</strong>
+            <span id="clockDate">—</span>
+          </div>
+        </div>
+        <button class="btn-logout" type="button" onclick="logout()">
+          <svg viewBox="0 0 24 24" fill="none" width="16" height="16" aria-hidden="true"><path d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 17l5-5-5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Logout</span>
+        </button>
+      </div>
     </aside>
 
     <main class="main-content" id="mainContent">
       <section id="dashboard" class="page active" aria-labelledby="dashboardTitle">
-        <div class="page-header">
+        <div class="page-header reveal-up" style="--d:0">
           <div>
             <p class="page-kicker">Dashboard</p>
-            <h1 id="dashboardTitle">Admin Penduduk</h1>
-            <p class="page-description">Kelola data kependudukan Desa Motabang dengan alur kerja yang lebih rapi dan cepat.</p>
+            <h1 id="dashboardTitle">Selamat datang kembali</h1>
+            <p class="page-description">Ringkasan data kependudukan Desa Motabang, diperbarui langsung dari basis data.</p>
           </div>
+          <button class="btn btn-ghost" type="button" onclick="loadDashboardStats(true)">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M20 11a8 8 0 1 0-2.1 5.4M20 5v6h-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Segarkan</span>
+          </button>
         </div>
 
-        <div class="stats-grid">
+        <div class="stats-grid reveal-up" style="--d:1">
           <div class="stat-card">
-            <span class="stat-label">Total Penduduk</span>
+            <div class="stat-card-top">
+              <span class="stat-label">Total Penduduk</span>
+              <svg class="stat-ring" width="38" height="38" viewBox="0 0 40 40" aria-hidden="true">
+                <circle cx="20" cy="20" r="16" class="stat-ring-track"></circle>
+                <circle cx="20" cy="20" r="16" class="stat-ring-fill" id="ringTotal"></circle>
+              </svg>
+            </div>
             <strong class="stat-value" id="totalPenduduk">0</strong>
             <span class="stat-note">Data warga terdaftar</span>
           </div>
 
-          <div class="stat-card">
-            <span class="stat-label">Laki-laki</span>
+          <div class="stat-card accent-blue">
+            <div class="stat-card-top">
+              <span class="stat-label">Laki-laki</span>
+              <span class="stat-pill" id="pctLaki">0%</span>
+            </div>
             <strong class="stat-value" id="totalLaki">0</strong>
             <span class="stat-note">Jumlah penduduk pria</span>
           </div>
 
-          <div class="stat-card">
-            <span class="stat-label">Perempuan</span>
+          <div class="stat-card accent-amber">
+            <div class="stat-card-top">
+              <span class="stat-label">Perempuan</span>
+              <span class="stat-pill" id="pctPerempuan">0%</span>
+            </div>
             <strong class="stat-value" id="totalPerempuan">0</strong>
             <span class="stat-note">Jumlah penduduk wanita</span>
           </div>
 
-          <div class="stat-card">
-            <span class="stat-label">Kepala Keluarga</span>
+          <div class="stat-card accent-green">
+            <div class="stat-card-top">
+              <span class="stat-label">Kepala Keluarga</span>
+            </div>
             <strong class="stat-value" id="totalKeluarga">0</strong>
             <span class="stat-note">Data keluarga aktif</span>
           </div>
         </div>
 
-        <div class="panel-card">
-          <h2>Ringkasan</h2>
-          <p>Selamat datang di panel admin Desa Motabang. Gunakan menu data penduduk untuk import, meninjau, mengubah, dan mengelola data warga secara lebih terstruktur.</p>
+        <div class="dash-grid reveal-up" style="--d:2">
+          <div class="panel-card">
+            <h2>Ringkasan</h2>
+            <p>Selamat datang di panel admin Desa Motabang. Gunakan menu Data Penduduk untuk mengimpor berkas Excel, meninjau, mengubah, dan mengelola data warga secara lebih terstruktur.</p>
+            <div class="quick-actions">
+              <button class="btn btn-primary" type="button" onclick="showPage('penduduk', document.querySelector('[data-page=penduduk]'))">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                Tambah / Kelola Data
+              </button>
+              <button class="btn btn-secondary" type="button" onclick="exportExcel()">Export Excel</button>
+            </div>
+          </div>
+          <div class="panel-card stamp-card">
+            <div class="stamp-visual" id="dashStamp" aria-hidden="true">
+              <svg viewBox="0 0 120 120" width="86" height="86">
+                <circle cx="60" cy="60" r="52" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="4 6"/>
+                <circle cx="60" cy="60" r="38" fill="none" stroke="currentColor" stroke-width="2"/>
+                <text x="60" y="56" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor" font-family="Fraunces, serif">DESA</text>
+                <text x="60" y="72" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor" font-family="Fraunces, serif">MOTABANG</text>
+              </svg>
+            </div>
+            <p>Setiap perubahan data tersimpan dengan jejak konfirmasi resmi — tidak ada lagi pop-up bawaan peramban.</p>
+          </div>
+        </div>
+
+        <!-- ====== STATISTIK LENGKAP (usia, dusun, pekerjaan, dll) ====== -->
+        <div class="section-divider reveal-up" style="--d:3">
+          <h2>Statistik Lengkap</h2>
+          <p>Rincian data kependudukan berdasarkan dusun, usia, pekerjaan, pendidikan, agama, dan status perkawinan.</p>
+        </div>
+
+        <div class="stats-grid stats-grid-secondary reveal-up" style="--d:3">
+          <div class="stat-card accent-blue">
+            <div class="stat-card-top">
+              <span class="stat-label">Usia Rata-rata</span>
+            </div>
+            <strong class="stat-value" id="usiaRataRata">0</strong>
+            <span class="stat-note">Tahun, dari data tercatat</span>
+          </div>
+
+          <div class="stat-card accent-green">
+            <div class="stat-card-top">
+              <span class="stat-label">Usia Termuda</span>
+            </div>
+            <strong class="stat-value" id="usiaTermuda">0</strong>
+            <span class="stat-note">Tahun</span>
+          </div>
+
+          <div class="stat-card accent-amber">
+            <div class="stat-card-top">
+              <span class="stat-label">Usia Tertua</span>
+            </div>
+            <strong class="stat-value" id="usiaTertua">0</strong>
+            <span class="stat-note">Tahun</span>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-top">
+              <span class="stat-label">Jumlah Dusun</span>
+            </div>
+            <strong class="stat-value" id="totalDusun">0</strong>
+            <span class="stat-note">Dusun terdata</span>
+          </div>
+        </div>
+
+        <div class="charts-grid reveal-up" style="--d:4">
+          <div class="panel-card chart-card chart-card-wide">
+            <div class="chart-card-head">
+              <h3>Penduduk &amp; KK per Dusun</h3>
+              <span class="chart-card-note">Perbandingan jumlah penduduk dan kepala keluarga tiap dusun</span>
+            </div>
+            <div class="chart-canvas-wrap"><canvas id="chartDusun" role="img" aria-label="Grafik penduduk dan KK per dusun"></canvas></div>
+          </div>
+
+          <div class="panel-card chart-card">
+            <div class="chart-card-head">
+              <h3>Kelompok Usia</h3>
+              <span class="chart-card-note">Distribusi penduduk berdasarkan kategori usia</span>
+            </div>
+            <div class="chart-canvas-wrap"><canvas id="chartUsia" role="img" aria-label="Grafik kelompok usia"></canvas></div>
+          </div>
+
+          <div class="panel-card chart-card">
+            <div class="chart-card-head">
+              <h3>Pekerjaan</h3>
+              <span class="chart-card-note">12 jenis pekerjaan terbanyak</span>
+            </div>
+            <div class="chart-canvas-wrap"><canvas id="chartPekerjaan" role="img" aria-label="Grafik pekerjaan penduduk"></canvas></div>
+          </div>
+
+          <div class="panel-card chart-card">
+            <div class="chart-card-head">
+              <h3>Pendidikan</h3>
+              <span class="chart-card-note">Tingkat pendidikan penduduk</span>
+            </div>
+            <div class="chart-canvas-wrap"><canvas id="chartPendidikan" role="img" aria-label="Grafik tingkat pendidikan"></canvas></div>
+          </div>
+
+          <div class="panel-card chart-card">
+            <div class="chart-card-head">
+              <h3>Agama</h3>
+              <span class="chart-card-note">Sebaran agama penduduk</span>
+            </div>
+            <div class="chart-canvas-wrap"><canvas id="chartAgama" role="img" aria-label="Grafik agama penduduk"></canvas></div>
+          </div>
+
+          <div class="panel-card chart-card">
+            <div class="chart-card-head">
+              <h3>Status Perkawinan</h3>
+              <span class="chart-card-note">Sebaran status perkawinan penduduk</span>
+            </div>
+            <div class="chart-canvas-wrap"><canvas id="chartStatus" role="img" aria-label="Grafik status perkawinan"></canvas></div>
+          </div>
+        </div>
+
+        <div class="table-card reveal-up" style="--d:5">
+          <div class="table-header">
+            <div>
+              <h3>Rincian per Dusun</h3>
+              <span class="table-subtitle" id="dusunTableSubtitle">Memuat rincian dusun…</span>
+            </div>
+          </div>
+
+          <div class="table-wrapper" tabindex="0" aria-label="Tabel rincian per dusun, dapat digeser horizontal pada layar kecil">
+            <table class="data-table" id="tabelDusun">
+              <thead>
+                <tr>
+                  <th scope="col">Dusun</th>
+                  <th scope="col">Jumlah KK</th>
+                  <th scope="col">Jumlah Penduduk</th>
+                  <th scope="col">Laki-laki</th>
+                  <th scope="col">Perempuan</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="skeleton-row"><td colspan="5"><span class="skeleton-bar"></span></td></tr>
+                <tr class="skeleton-row"><td colspan="5"><span class="skeleton-bar"></span></td></tr>
+                <tr class="skeleton-row"><td colspan="5"><span class="skeleton-bar"></span></td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
       <section id="penduduk" class="page" aria-labelledby="pendudukTitle">
-        <div class="page-header">
+        <div class="page-header reveal-up" style="--d:0">
           <div>
             <p class="page-kicker">Manajemen Data</p>
             <h1 id="pendudukTitle">Data Penduduk</h1>
-            <p class="page-description">Import file Excel, filter data, dan kelola data penduduk dari satu halaman kerja.</p>
+            <p class="page-description">Import berkas Excel, telusuri, dan kelola data penduduk dari satu halaman kerja.</p>
           </div>
+          <button class="btn btn-primary" type="button" onclick="openAddModal()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Tambah Penduduk
+          </button>
         </div>
 
-        <div class="panel-card toolbar-card">
+        <div class="panel-card toolbar-card reveal-up" style="--d:1">
           <div class="toolbar-block">
             <h3>Import Data</h3>
+            <label class="dropzone" id="dropzone" for="fileExcel">
+              <input type="file" id="fileExcel" accept=".xlsx,.xls,.csv" onchange="handleFileChosen()">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span id="dropzoneText">Seret berkas Excel ke sini, atau <strong>klik untuk memilih</strong></span>
+              <span class="dropzone-file" id="dropzoneFile" hidden></span>
+            </label>
             <div class="toolbar-actions">
-              <input type="file" id="fileExcel" accept=".xlsx,.xls,.csv">
               <button class="btn btn-primary" type="button" onclick="importExcel()">Preview Excel</button>
               <button class="btn btn-success" type="button" onclick="saveToDatabase()">Simpan ke Database</button>
+              <span class="import-badge" id="importBadge" hidden>0 baris siap disimpan</span>
             </div>
           </div>
 
           <div class="toolbar-block">
             <h3>Kelola Data</h3>
             <div class="toolbar-actions">
-              <button class="btn btn-secondary" type="button" onclick="loadPenduduk(1)">Refresh Data</button>
+              <button class="btn btn-secondary" type="button" onclick="loadPenduduk(1)">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none"><path d="M20 11a8 8 0 1 0-2.1 5.4M20 5v6h-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Refresh Data
+              </button>
               <button class="btn btn-info" type="button" onclick="exportExcel()">Export Excel</button>
               <button class="btn btn-warning" type="button" onclick="openDuplicateModal()">Cek Duplikat</button>
             </div>
           </div>
         </div>
 
-        <div class="panel-card filter-card">
-          <label class="sr-only" for="searchInput">Cari data penduduk</label>
-          <input
-            type="text"
-            id="searchInput"
-            class="search-input"
-            placeholder="Cari nama, NIK, atau alamat..."
-            oninput="handleSearch()"
-          >
+        <div class="panel-card filter-card reveal-up" style="--d:2">
+          <div class="search-wrap">
+            <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <label class="sr-only" for="searchInput">Cari data penduduk</label>
+            <input
+              type="text"
+              id="searchInput"
+              class="search-input"
+              placeholder="Cari nama, NIK, atau alamat..."
+              oninput="handleSearch()"
+            >
+            <button class="search-clear" id="searchClear" type="button" onclick="clearSearch()" aria-label="Bersihkan pencarian" hidden>&times;</button>
+          </div>
 
           <label class="sr-only" for="filterDusun">Filter dusun</label>
           <select id="filterDusun" class="filter-select" onchange="handleFilter()">
@@ -161,12 +365,16 @@
             <option value="Laki-laki">Laki-laki</option>
             <option value="Perempuan">Perempuan</option>
           </select>
+
+          <button class="btn btn-secondary filter-reset" id="filterResetBtn" type="button" onclick="resetFilters()" hidden>Reset Filter</button>
         </div>
 
-        <div class="table-card">
+        <div class="table-card reveal-up" style="--d:3">
           <div class="table-header">
-            <h3>Daftar Penduduk</h3>
-            <span class="table-subtitle">Data aktif yang tersedia di sistem</span>
+            <div>
+              <h3>Daftar Penduduk</h3>
+              <span class="table-subtitle" id="tableSubtitle">Memuat data aktif yang tersedia di sistem…</span>
+            </div>
           </div>
 
           <div class="table-wrapper" tabindex="0" aria-label="Tabel data penduduk, dapat digeser horizontal pada layar kecil">
@@ -187,18 +395,18 @@
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td colspan="11" class="table-state">Memuat data...</td>
-                </tr>
+                <tr class="skeleton-row"><td colspan="11"><span class="skeleton-bar"></span></td></tr>
+                <tr class="skeleton-row"><td colspan="11"><span class="skeleton-bar"></span></td></tr>
+                <tr class="skeleton-row"><td colspan="11"><span class="skeleton-bar"></span></td></tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <div class="pagination-card" aria-label="Navigasi pagination">
-          <button class="btn-page" id="prevPage" type="button" onclick="changePage(-1)">Sebelumnya</button>
+        <div class="pagination-card reveal-up" style="--d:4">
+          <button class="btn-page" id="prevPage" type="button" onclick="changePage(-1)">← Sebelumnya</button>
           <span class="page-info" id="pageInfo">Halaman 1 dari 1</span>
-          <button class="btn-page" id="nextPage" type="button" onclick="changePage(1)">Berikutnya</button>
+          <button class="btn-page" id="nextPage" type="button" onclick="changePage(1)">Berikutnya →</button>
         </div>
       </section>
     </main>
@@ -207,99 +415,115 @@
   <div id="modalForm" class="modal" aria-hidden="true">
     <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <div class="modal-header">
-        <h3 id="modalTitle">Form Penduduk</h3>
+        <h3 id="modalTitle">Tambah Data Penduduk</h3>
         <button class="modal-close" type="button" aria-label="Tutup form" onclick="closeModal('modalForm')">&times;</button>
       </div>
       <div class="modal-body">
-        <form id="formPenduduk">
+        <form id="formPenduduk" onsubmit="event.preventDefault(); savePenduduk();" novalidate>
           <input type="hidden" id="editId">
 
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="dusun">Dusun</label>
-              <input type="text" id="dusun">
+          <fieldset class="form-fieldset">
+            <legend>Identitas</legend>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="nik">NIK</label>
+                <input type="text" id="nik" inputmode="numeric" maxlength="16" oninput="validateNik()">
+                <span class="field-hint" id="nikHint">16 digit angka</span>
+              </div>
+              <div class="form-group">
+                <label for="nama">Nama</label>
+                <input type="text" id="nama" required>
+              </div>
+              <div class="form-group">
+                <label for="jenis_kelamin">Jenis Kelamin</label>
+                <select id="jenis_kelamin">
+                  <option value="">Pilih</option>
+                  <option value="Laki-laki">Laki-laki</option>
+                  <option value="Perempuan">Perempuan</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="tempat_lahir">Tempat Lahir</label>
+                <input type="text" id="tempat_lahir">
+              </div>
+              <div class="form-group">
+                <label for="tanggal_lahir">Tanggal Lahir</label>
+                <input type="date" id="tanggal_lahir" onchange="computeAge()">
+              </div>
+              <div class="form-group">
+                <label for="usia">Usia</label>
+                <input type="number" id="usia" inputmode="numeric">
+              </div>
             </div>
-            <div class="form-group">
-              <label for="rw">RW</label>
-              <input type="text" id="rw">
+          </fieldset>
+
+          <fieldset class="form-fieldset">
+            <legend>Domisili &amp; Keluarga</legend>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="dusun">Dusun</label>
+                <input type="text" id="dusun">
+              </div>
+              <div class="form-group">
+                <label for="rw">RW</label>
+                <input type="text" id="rw">
+              </div>
+              <div class="form-group">
+                <label for="rt">RT</label>
+                <input type="text" id="rt">
+              </div>
+              <div class="form-group">
+                <label for="kode_keluarga">Kode Keluarga</label>
+                <input type="text" id="kode_keluarga">
+              </div>
+              <div class="form-group">
+                <label for="hubungan">Hubungan dalam Keluarga</label>
+                <input type="text" id="hubungan">
+              </div>
+              <div class="form-group form-group-full">
+                <label for="alamat">Alamat</label>
+                <textarea id="alamat"></textarea>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="rt">RT</label>
-              <input type="text" id="rt">
+          </fieldset>
+
+          <fieldset class="form-fieldset">
+            <legend>Data Lainnya</legend>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="status">Status Perkawinan</label>
+                <input type="text" id="status">
+              </div>
+              <div class="form-group">
+                <label for="agama">Agama</label>
+                <input type="text" id="agama">
+              </div>
+              <div class="form-group">
+                <label for="gol_darah">Golongan Darah</label>
+                <input type="text" id="gol_darah">
+              </div>
+              <div class="form-group">
+                <label for="kewarganegaraan">Kewarganegaraan</label>
+                <input type="text" id="kewarganegaraan" value="WNI">
+              </div>
+              <div class="form-group">
+                <label for="etnis">Etnis / Suku</label>
+                <input type="text" id="etnis">
+              </div>
+              <div class="form-group">
+                <label for="pendidikan">Pendidikan</label>
+                <input type="text" id="pendidikan">
+              </div>
+              <div class="form-group">
+                <label for="pekerjaan">Pekerjaan</label>
+                <input type="text" id="pekerjaan">
+              </div>
             </div>
-            <div class="form-group">
-              <label for="kode_keluarga">Kode Keluarga</label>
-              <input type="text" id="kode_keluarga">
-            </div>
-            <div class="form-group">
-              <label for="nik">NIK</label>
-              <input type="text" id="nik" inputmode="numeric">
-            </div>
-            <div class="form-group">
-              <label for="nama">Nama</label>
-              <input type="text" id="nama">
-            </div>
-            <div class="form-group">
-              <label for="jenis_kelamin">Jenis Kelamin</label>
-              <select id="jenis_kelamin">
-                <option value="">Pilih</option>
-                <option value="Laki-laki">Laki-laki</option>
-                <option value="Perempuan">Perempuan</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="tempat_lahir">Tempat Lahir</label>
-              <input type="text" id="tempat_lahir">
-            </div>
-            <div class="form-group">
-              <label for="tanggal_lahir">Tanggal Lahir</label>
-              <input type="date" id="tanggal_lahir">
-            </div>
-            <div class="form-group">
-              <label for="usia">Usia</label>
-              <input type="number" id="usia" inputmode="numeric">
-            </div>
-            <div class="form-group">
-              <label for="hubungan">Hubungan</label>
-              <input type="text" id="hubungan">
-            </div>
-            <div class="form-group">
-              <label for="status">Status</label>
-              <input type="text" id="status">
-            </div>
-            <div class="form-group">
-              <label for="agama">Agama</label>
-              <input type="text" id="agama">
-            </div>
-            <div class="form-group">
-              <label for="gol_darah">Golongan Darah</label>
-              <input type="text" id="gol_darah">
-            </div>
-            <div class="form-group">
-              <label for="kewarganegaraan">Kewarganegaraan</label>
-              <input type="text" id="kewarganegaraan">
-            </div>
-            <div class="form-group">
-              <label for="etnis">Etnis / Suku</label>
-              <input type="text" id="etnis">
-            </div>
-            <div class="form-group">
-              <label for="pendidikan">Pendidikan</label>
-              <input type="text" id="pendidikan">
-            </div>
-            <div class="form-group">
-              <label for="pekerjaan">Pekerjaan</label>
-              <input type="text" id="pekerjaan">
-            </div>
-            <div class="form-group form-group-full">
-              <label for="alamat">Alamat</label>
-              <textarea id="alamat"></textarea>
-            </div>
-          </div>
+          </fieldset>
 
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" onclick="closeModal('modalForm')">Batal</button>
-            <button type="button" class="btn btn-primary" onclick="savePenduduk()">Simpan</button>
+            <button type="submit" class="btn btn-primary">Simpan Data</button>
           </div>
         </form>
       </div>
@@ -319,6 +543,25 @@
       </div>
     </div>
   </div>
+
+  <div id="confirmModal" class="modal" aria-hidden="true">
+    <div class="modal-dialog modal-confirm" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <div class="confirm-stamp" aria-hidden="true">
+        <svg viewBox="0 0 60 60" width="48" height="48">
+          <circle cx="30" cy="30" r="26" fill="none" stroke="currentColor" stroke-width="2.4" stroke-dasharray="3 5"/>
+          <path id="confirmIconPath" d="M19 30l8 8 14-16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h3 id="confirmTitle">Konfirmasi</h3>
+      <p id="confirmMessage">Apakah Anda yakin?</p>
+      <div class="modal-footer confirm-footer">
+        <button type="button" class="btn btn-secondary" id="confirmCancelBtn">Batal</button>
+        <button type="button" class="btn btn-danger" id="confirmOkBtn">Ya, Lanjutkan</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
 
   <script src="js/admin.js"></script>
   <script>
