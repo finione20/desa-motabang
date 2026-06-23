@@ -1,104 +1,54 @@
 require("dotenv").config();
-const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Database
+const http = require("http");
+const app = require("./app");
 const db = require("./config/database");
 
-// Middleware
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5500",
-      "http://127.0.0.1:5500",
-      "http://localhost:3000",
-      "https://desamotabang.netlify.app"
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+const PORT = Number(process.env.PORT) || 3000;
+const server = http.createServer(app);
 
-app.use(bodyParser.json({ limit: "50mb" }));
-app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
-
-// Log setiap request
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
-  next();
-});
-
-// Routes
-const authRoute = require("./routes/auth");
-app.use("/api/auth", authRoute);
-
-const pendudukRoute = require("./routes/penduduk");
-app.use("/api/penduduk", pendudukRoute);
-
-const registerSuratRoute = require("./routes/registerSurat");
-app.use("/api/register-surat", registerSuratRoute);
-
-// Root endpoint
-app.get("/", (req, res) => {
-  res.json({
-    message: "Server Website Desa Aktif",
-    status: "running",
-    timestamp: new Date().toISOString(),
-  });
-});
-
-// Test database endpoint
-app.get("/api/test-db", async (req, res) => {
-  try {
-    const result = await db.query("SELECT 1 + 1 AS solution");
-    res.json({
-      status: "success",
-      message: "Database connected",
-      result: result.rows[0].solution,
-    });
-  } catch (err) {
-    return res.status(500).json({
-      status: "error",
-      message: "Database connection failed",
-      error: err.message,
-    });
-  }
-});
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error("Error:", err);
-  res.status(500).json({
-    status: "error",
-    message: err.message || "Internal Server Error",
-  });
-});
-
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({
-    status: "error",
-    message: "Endpoint tidak ditemukan",
-  });
-});
-
-// Start server
-app.listen(PORT, () => {
-  console.log("=".repeat(50));
+server.listen(PORT, () => {
+  console.log("=".repeat(60));
   console.log(`🚀 Server aktif di port ${PORT}`);
+  console.log(`🌍 NODE_ENV: ${process.env.NODE_ENV || "development"}`);
   console.log(`📅 ${new Date().toLocaleString("id-ID")}`);
-  console.log("=".repeat(50));
+  console.log("=".repeat(60));
 });
 
-// Handle uncaught errors
+let isShuttingDown = false;
+
+async function shutdown(signal) {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+
+  console.log(`\n⚠️ Menerima ${signal}, memulai graceful shutdown...`);
+
+  server.close(async () => {
+    console.log("🛑 HTTP server berhenti menerima koneksi baru.");
+
+    try {
+      await db.end();
+      console.log("✅ PostgreSQL pool berhasil ditutup.");
+      process.exit(0);
+    } catch (err) {
+      console.error("❌ Gagal menutup PostgreSQL pool:", err);
+      process.exit(1);
+    }
+  });
+
+  setTimeout(() => {
+    console.error("❌ Graceful shutdown timeout. Proses dihentikan paksa.");
+    process.exit(1);
+  }, 15000);
+}
+
+process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+
 process.on("uncaughtException", (err) => {
   console.error("❌ Uncaught Exception:", err);
 });
 
-process.on("unhandledRejection", (err) => {
-  console.error("❌ Unhandled Rejection:", err);
+process.on("unhandledRejection", (reason) => {
+  console.error("❌ Unhandled Rejection:", reason);
 });

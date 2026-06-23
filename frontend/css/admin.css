@@ -124,7 +124,6 @@ a:focus-visible {
   outline-offset: 2px;
 }
 
-/* ---------- Reveal saat load ---------- */
 .reveal-up {
   opacity: 0;
   transform: translateY(16px);
@@ -139,7 +138,6 @@ a:focus-visible {
   }
 }
 
-/* ---------- Theme toggle ---------- */
 .theme-toggle {
   position: fixed;
   top: 18px;
@@ -585,7 +583,6 @@ html[data-theme="dark"] .sidebar {
   font-size: 14px;
 }
 
-/* ---------- Section divider (statistik lengkap) ---------- */
 .section-divider {
   margin: 30px 0 18px;
   padding-top: 6px;
@@ -604,7 +601,6 @@ html[data-theme="dark"] .sidebar {
   max-width: 65ch;
 }
 
-/* ---------- Charts grid ---------- */
 .charts-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -841,6 +837,10 @@ html[data-theme="dark"] .sidebar {
   border-collapse: collapse;
 }
 
+.data-table-pajak {
+  min-width: 760px;
+}
+
 .data-table thead th {
   position: sticky;
   top: 0;
@@ -886,6 +886,12 @@ html[data-theme="dark"] .data-table thead th {
 #tabelDusun tbody td:first-child {
   font-weight: 700;
   color: var(--primary);
+}
+
+.td-money {
+  font-weight: 800;
+  color: var(--primary);
+  white-space: nowrap;
 }
 
 .table-state {
@@ -1240,7 +1246,6 @@ html[data-theme="dark"] .data-table thead th {
   border-bottom: none;
 }
 
-/* ---------- Confirm modal (stempel) ---------- */
 .modal-confirm {
   max-width: 420px;
   padding: 32px 28px;
@@ -1276,7 +1281,6 @@ html[data-theme="dark"] .data-table thead th {
   margin-top: 22px;
 }
 
-/* ---------- Toast ---------- */
 .toast-stack {
   position: fixed;
   bottom: 22px;
@@ -1353,7 +1357,6 @@ html[data-theme="dark"] .data-table thead th {
   flex-shrink: 0;
 }
 
-/* ---------- Skip link / misc ---------- */
 .skip-link {
   position: absolute;
   left: 16px;
@@ -1546,6 +1549,10 @@ html[data-theme="dark"] .data-table thead th {
 
   .data-table {
     min-width: 900px;
+  }
+
+  .data-table-pajak {
+    min-width: 680px;
   }
 
   .toast-stack {

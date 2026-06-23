@@ -73,6 +73,18 @@
           <span class="nav-count" id="navPendudukCount">0</span>
         </button>
 
+        <button class="nav-item" type="button" data-page="pajak" onclick="showPage('pajak', this); closeSidebar();">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M6 4.5h9l3 3V19a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 5 19V6A1.5 1.5 0 0 1 6.5 4.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+              <path d="M14.5 4.5V8H18" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+              <path d="M8 12h8M8 15.5h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="nav-text">Data Pajak</span>
+          <span class="nav-count" id="navPajakCount">0</span>
+        </button>
+
         <a class="nav-item nav-link" href="pilih.html">
           <span class="nav-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none"><path d="M11 5L4.5 12 11 19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 12H19.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -179,7 +191,6 @@
           </div>
         </div>
 
-        <!-- ====== STATISTIK LENGKAP (usia, dusun, pekerjaan, dll) ====== -->
         <div class="section-divider reveal-up" style="--d:3">
           <h2>Statistik Lengkap</h2>
           <p>Rincian data kependudukan berdasarkan dusun, usia, pekerjaan, pendidikan, agama, dan status perkawinan.</p>
@@ -409,6 +420,104 @@
           <button class="btn-page" id="nextPage" type="button" onclick="changePage(1)">Berikutnya →</button>
         </div>
       </section>
+
+      <section id="pajak" class="page" aria-labelledby="pajakTitle">
+        <div class="page-header reveal-up" style="--d:0">
+          <div>
+            <p class="page-kicker">Manajemen Pajak</p>
+            <h1 id="pajakTitle">Data Pajak</h1>
+            <p class="page-description">Kelola data pajak warga dari frontend terlebih dahulu, termasuk tambah, edit, hapus, dan import Excel.</p>
+          </div>
+          <button class="btn btn-primary" type="button" onclick="openPajakModal()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Tambah Data Pajak
+          </button>
+        </div>
+
+        <div class="panel-card toolbar-card reveal-up" style="--d:1">
+          <div class="toolbar-block">
+            <h3>Import Data Pajak</h3>
+            <label class="dropzone" id="dropzonePajak" for="fileExcelPajak">
+              <input type="file" id="fileExcelPajak" accept=".xlsx,.xls,.csv" onchange="handlePajakFileChosen()">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span id="dropzonePajakText">Seret berkas Excel pajak ke sini, atau <strong>klik untuk memilih</strong></span>
+              <span class="dropzone-file" id="dropzonePajakFile" hidden></span>
+            </label>
+            <div class="toolbar-actions">
+              <button class="btn btn-primary" type="button" onclick="importPajakExcel()">Preview Excel Pajak</button>
+              <button class="btn btn-success" type="button" onclick="savePajakImport()">Simpan ke Tabel Pajak</button>
+              <span class="import-badge" id="importBadgePajak" hidden>0 baris siap disimpan</span>
+            </div>
+          </div>
+
+          <div class="toolbar-block">
+            <h3>Kelola Data Pajak</h3>
+            <div class="toolbar-actions">
+              <button class="btn btn-secondary" type="button" onclick="loadPajak(1)">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none"><path d="M20 11a8 8 0 1 0-2.1 5.4M20 5v6h-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Refresh Data
+              </button>
+              <button class="btn btn-info" type="button" onclick="exportPajakExcel()">Export Pajak
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-card filter-card reveal-up" style="--d:2">
+          <div class="search-wrap">
+            <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <label class="sr-only" for="searchPajakInput">Cari data pajak</label>
+            <input
+              type="text"
+              id="searchPajakInput"
+              class="search-input"
+              placeholder="Cari nama, NOP, atau jumlah..."
+              oninput="handlePajakSearch()"
+            >
+            <button class="search-clear" id="searchPajakClear" type="button" onclick="clearPajakSearch()" aria-label="Bersihkan pencarian pajak" hidden>&times;</button>
+          </div>
+
+          <label class="sr-only" for="filterPajakDusun">Filter dusun pajak</label>
+          <select id="filterPajakDusun" class="filter-select" onchange="handlePajakFilter()">
+            <option value="">Semua Dusun</option>
+          </select>
+
+          <button class="btn btn-secondary filter-reset" id="filterPajakResetBtn" type="button" onclick="resetPajakFilters()" hidden>Reset Filter</button>
+        </div>
+
+        <div class="table-card reveal-up" style="--d:3">
+          <div class="table-header">
+            <div>
+              <h3>Daftar Pajak</h3>
+              <span class="table-subtitle" id="tablePajakSubtitle">Belum ada data pajak dimuat.</span>
+            </div>
+          </div>
+
+          <div class="table-wrapper" tabindex="0" aria-label="Tabel data pajak, dapat digeser horizontal pada layar kecil">
+            <table class="data-table data-table-pajak" id="tabelPajak">
+              <thead>
+                <tr>
+                  <th scope="col">No</th>
+                  <th scope="col">Nama</th>
+                  <th scope="col">Dusun</th>
+                  <th scope="col">NOP</th>
+                  <th scope="col">Jumlah</th>
+                  <th scope="col">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="6"><div class="table-empty"><span>Belum ada data pajak. Tambahkan manual atau import Excel.</span></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="pagination-card reveal-up" style="--d:4">
+          <button class="btn-page" id="prevPajakPage" type="button" onclick="changePajakPage(-1)">← Sebelumnya</button>
+          <span class="page-info" id="pagePajakInfo">Halaman 1 dari 1</span>
+          <button class="btn-page" id="nextPajakPage" type="button" onclick="changePajakPage(1)">Berikutnya →</button>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -524,6 +633,47 @@
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" onclick="closeModal('modalForm')">Batal</button>
             <button type="submit" class="btn btn-primary">Simpan Data</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalPajakForm" class="modal" aria-hidden="true">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modalPajakTitle">
+      <div class="modal-header">
+        <h3 id="modalPajakTitle">Tambah Data Pajak</h3>
+        <button class="modal-close" type="button" aria-label="Tutup form pajak" onclick="closeModal('modalPajakForm')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="formPajak" onsubmit="event.preventDefault(); savePajak();" novalidate>
+          <input type="hidden" id="editPajakId">
+
+          <fieldset class="form-fieldset">
+            <legend>Informasi Pajak</legend>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="pajakNama">Nama</label>
+                <input type="text" id="pajakNama" required>
+              </div>
+              <div class="form-group">
+                <label for="pajakDusun">Dusun</label>
+                <input type="text" id="pajakDusun" required>
+              </div>
+              <div class="form-group">
+                <label for="pajakNop">NOP</label>
+                <input type="text" id="pajakNop" required>
+              </div>
+              <div class="form-group">
+                <label for="pajakJumlah">Jumlah</label>
+                <input type="number" id="pajakJumlah" inputmode="numeric" min="0" step="1" required>
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modalPajakForm')">Batal</button>
+            <button type="submit" class="btn btn-primary">Simpan Data Pajak</button>
           </div>
         </form>
       </div>

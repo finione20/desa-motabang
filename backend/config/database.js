@@ -9,13 +9,11 @@ const isProduction = process.env.NODE_ENV === "production";
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: isProduction
-    ? { rejectUnauthorized: false }
-    : false,
-  max: 10,
-  min: 0,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 15000,
+  ssl: isProduction ? { rejectUnauthorized: false } : false,
+  max: Number(process.env.PG_POOL_MAX || 10),
+  min: Number(process.env.PG_POOL_MIN || 0),
+  idleTimeoutMillis: Number(process.env.PG_IDLE_TIMEOUT || 30000),
+  connectionTimeoutMillis: Number(process.env.PG_CONNECTION_TIMEOUT || 15000),
   keepAlive: true,
   allowExitOnIdle: !isProduction,
 });

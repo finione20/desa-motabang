@@ -8,7 +8,16 @@ let totalData = 0;
 let searchDebounce = null;
 let chartInstances = {};
 
+let importedPajakData = [];
+let currentPajakPage = 1;
+let currentPajakSearch = "";
+let currentPajakDusun = "";
+let totalPajakPage = 1;
+let totalPajakData = 0;
+let pajakSearchDebounce = null;
+
 const LIMIT = 10;
+const PAJAK_LIMIT = 10;
 const THEME_KEY = "desa_motabang_theme";
 const API_URL =
   window.location.hostname === "localhost" ||
@@ -21,12 +30,14 @@ document.addEventListener("DOMContentLoaded", () => {
   initClock();
   initNavIndicator();
   initDropzone();
+  initPajakDropzone();
   initModalDismiss();
   loadDashboardStats();
   populateDusunFilter();
+  populatePajakDusunFilter();
+  loadPajak(1);
 });
 
-/* ================= THEME ================= */
 function initTheme() {
   const toggle = document.getElementById("themeToggle");
   const root = document.documentElement;
@@ -50,9 +61,7 @@ function initTheme() {
     applyTheme(next);
     try {
       localStorage.setItem(THEME_KEY, next);
-    } catch (error) {
-      /* abaikan jika storage tidak tersedia */
-    }
+    } catch (error) {}
     refreshDashboardChartsIfVisible();
   });
 
@@ -67,7 +76,6 @@ function initTheme() {
   }
 }
 
-/* ================= CLOCK ================= */
 function initClock() {
   const timeEl = document.getElementById("clockTime");
   const dateEl = document.getElementById("clockDate");
@@ -83,7 +91,6 @@ function initClock() {
   setInterval(tick, 30000);
 }
 
-/* ================= NAV INDICATOR ================= */
 function initNavIndicator() {
   const active = document.querySelector(".nav-item.active");
   if (active) moveNavIndicator(active);
@@ -107,7 +114,6 @@ function moveNavIndicator(el) {
   indicator.style.height = `${elRect.height}px`;
 }
 
-/* ================= PAGE SWITCH ================= */
 function showPage(id, el) {
   document.querySelectorAll(".page").forEach(page => page.classList.remove("active"));
   const targetPage = document.getElementById(id);
@@ -126,9 +132,12 @@ function showPage(id, el) {
   if (id === "penduduk") {
     loadPenduduk(1);
   }
+
+  if (id === "pajak") {
+    loadPajak(1);
+  }
 }
 
-/* ================= DASHBOARD STATS (RINGKASAN) ================= */
 function loadDashboardStats(manual) {
   if (manual) showToast("Memuat ulang ringkasan dashboard…", "info");
 
@@ -204,7 +213,6 @@ function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-/* ================= STATISTIK LENGKAP (DUSUN, USIA, PEKERJAAN, DLL) ================= */
 function loadDetailedStats() {
   fetch(`${API_URL}/penduduk/stats/detail`)
     .then(res => {
@@ -271,7 +279,6 @@ function renderDusunTable(rows) {
   setText("dusunTableSubtitle", `${rows.length} dusun terdata`);
 }
 
-/* ---------- Chart helpers ---------- */
 function getThemeColors() {
   const styles = getComputedStyle(document.documentElement);
   return {
@@ -449,7 +456,6 @@ function renderChartGeneric(canvasId, rows, type) {
   });
 }
 
-/* ================= DROPZONE / IMPORT EXCEL ================= */
 function initDropzone() {
   const zone = document.getElementById("dropzone");
   const input = document.getElementById("fileExcel");
@@ -633,7 +639,6 @@ function resetDropzone() {
   if (input) input.value = "";
 }
 
-/* ================= TABLE / LIST ================= */
 function loadPenduduk(page = 1) {
   currentPage = page;
   const tbody = document.querySelector("#tabelPenduduk tbody");
@@ -712,7 +717,7 @@ function renderPendudukTable(data) {
       <td>
         <div class="action-buttons">
           <button class="btn-edit" type="button" title="Edit" onclick="editPenduduk('${item.id}')">✎</button>
-          <button class="btn-delete" type="button" title="Hapus" onclick="deletePenduduk('${item.id}', '${escapeHtml(item.nama) || ""}')">×</button>
+          <button class="btn-delete" type="button" title="Hapus" onclick="deletePenduduk('${item.id}', '${escapeJsString(item.nama || "")}')">×</button>
         </div>
       </td>
     `;
@@ -723,38 +728,6 @@ function renderPendudukTable(data) {
   tbody.appendChild(fragment);
 }
 
-function emptyState(message) {
-  return `
-    <div class="table-empty">
-      <svg viewBox="0 0 24 24" width="34" height="34" fill="none"><rect x="3.5" y="6" width="17" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 10h17" stroke="currentColor" stroke-width="1.6"/><path d="M8 4v4M16 4v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-      <span>${message}</span>
-    </div>
-  `;
-}
-
-function escapeHtml(value) {
-  if (value === null || value === undefined) return "";
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
-function formatTTL(tempat, tanggal) {
-  if (!tempat && !tanggal) return "-";
-  if (!tanggal) return escapeHtml(tempat) || "-";
-
-  const date = new Date(tanggal);
-  const formatted = isNaN(date.getTime())
-    ? escapeHtml(tanggal)
-    : date.toLocaleDateString("id-ID", { day: "2-digit", month: "2-digit", year: "numeric" });
-
-  return `${escapeHtml(tempat) || "-"}, ${formatted}`;
-}
-
-/* ================= SEARCH & FILTER ================= */
 function handleSearch() {
   const input = document.getElementById("searchInput");
   const clearBtn = document.getElementById("searchClear");
@@ -855,7 +828,6 @@ function populateDusunFilter() {
     });
 }
 
-/* ================= FORM MODAL ================= */
 function openAddModal() {
   const form = document.getElementById("formPenduduk");
   if (form) form.reset();
@@ -1032,7 +1004,6 @@ function exportExcel() {
   window.open(`${API_URL}/penduduk/export/excel`, "_blank");
 }
 
-/* ================= DUPLICATE MODAL ================= */
 function openDuplicateModal() {
   openModal("duplicateModal");
   const content = document.getElementById("duplicateContent");
@@ -1090,7 +1061,526 @@ function renderDuplicates(data) {
   content.innerHTML = html;
 }
 
-/* ================= MODAL HELPERS ================= */
+function initPajakDropzone() {
+  const zone = document.getElementById("dropzonePajak");
+  const input = document.getElementById("fileExcelPajak");
+  if (!zone || !input) return;
+
+  ["dragenter", "dragover"].forEach(evt => {
+    zone.addEventListener(evt, e => {
+      e.preventDefault();
+      zone.classList.add("drag-over");
+    });
+  });
+
+  ["dragleave", "drop"].forEach(evt => {
+    zone.addEventListener(evt, e => {
+      e.preventDefault();
+      zone.classList.remove("drag-over");
+    });
+  });
+
+  zone.addEventListener("drop", e => {
+    const file = e.dataTransfer && e.dataTransfer.files ? e.dataTransfer.files[0] : null;
+    if (file) {
+      input.files = e.dataTransfer.files;
+      handlePajakFileChosen();
+    }
+  });
+}
+
+function handlePajakFileChosen() {
+  const fileInput = document.getElementById("fileExcelPajak");
+  const label = document.getElementById("dropzonePajakFile");
+  const text = document.getElementById("dropzonePajakText");
+  const file = fileInput ? fileInput.files[0] : null;
+
+  if (!file || !label || !text) return;
+
+  text.hidden = true;
+  label.hidden = false;
+  label.textContent = `${file.name} dipilih — klik "Preview Excel Pajak" untuk melanjutkan`;
+}
+
+function importPajakExcel() {
+  const fileInput = document.getElementById("fileExcelPajak");
+  const file = fileInput ? fileInput.files[0] : null;
+
+  if (!file) {
+    showToast("Pilih berkas Excel pajak terlebih dahulu.", "error");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet);
+
+      importedPajakData = rows
+        .map((row, index) => ({
+          id: `preview-pajak-${Date.now()}-${index}`,
+          nama: String(
+            row.Nama ??
+            row.NAMA ??
+            row.nama ??
+            ""
+          ).trim(),
+          dusun: String(
+            row.Dusun ??
+            row.DUSUN ??
+            row.dusun ??
+            ""
+          ).trim(),
+          nop: String(
+            row.NOP ??
+            row.nop ??
+            ""
+          ).trim(),
+          jumlah: normalizeCurrencyValue(
+            row["Jumlah Pajak"] ??
+            row["JUMLAH PAJAK"] ??
+            row.Jumlah ??
+            row.JUMLAH ??
+            row.jumlah ??
+            0
+          ),
+          isPreview: true
+        }))
+        .filter(item => item.nama || item.dusun || item.nop || item.jumlah);
+
+      renderPajakPreview(importedPajakData);
+
+      const badge = document.getElementById("importBadgePajak");
+      if (badge) {
+        badge.hidden = false;
+        badge.textContent = `${importedPajakData.length} baris siap disimpan`;
+      }
+
+      showToast(`Preview data pajak berhasil dimuat (${importedPajakData.length} baris).`, "success");
+    } catch (error) {
+      console.error(error);
+      showToast("Gagal membaca Excel pajak. Pastikan kolom Nama, Dusun, NOP, dan Jumlah Pajak tersedia.", "error");
+    }
+  };
+
+  reader.readAsArrayBuffer(file);
+}
+
+function renderPajakPreview(data) {
+  const tbody = document.querySelector("#tabelPajak tbody");
+  if (!tbody) return;
+
+  tbody.innerHTML = "";
+
+  if (!Array.isArray(data) || data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6">${emptyState("Tidak ada data preview pajak.")}</td></tr>`;
+    setText("tablePajakSubtitle", "Preview pajak kosong");
+    setPajakPaginationInfo(1, 1);
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  data.forEach((item, index) => {
+    const tr = document.createElement("tr");
+    tr.style.animationDelay = `${Math.min(index, 12) * 25}ms`;
+    tr.innerHTML = `
+      <td>${index + 1}</td>
+      <td>${escapeHtml(item.nama) || "-"}</td>
+      <td>${escapeHtml(item.dusun) || "-"}</td>
+      <td>${escapeHtml(item.nop) || "-"}</td>
+      <td class="td-money">${formatRupiah(item.jumlah)}</td>
+      <td><span class="badge-danger">Preview</span></td>
+    `;
+    fragment.appendChild(tr);
+  });
+
+  tbody.appendChild(fragment);
+  setText("tablePajakSubtitle", `Menampilkan ${data.length} baris pratinjau pajak (belum disimpan)`);
+  setPajakPaginationInfo(1, 1);
+  updatePajakPaginationButtons();
+}
+
+function savePajakImport() {
+  if (!Array.isArray(importedPajakData) || importedPajakData.length === 0) {
+    showToast("Belum ada preview pajak untuk disimpan.", "error");
+    return;
+  }
+
+  showConfirm({
+    title: "Simpan data pajak?",
+    message: `${importedPajakData.length} baris data pajak akan disimpan ke database.`,
+    confirmLabel: "Ya, Simpan",
+    onConfirm: () => {
+      fetch(`${API_URL}/pajak/import`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          data: importedPajakData.map(item => ({
+            nama: item.nama,
+            dusun: item.dusun,
+            nop: item.nop,
+            jumlah: Number(item.jumlah || 0)
+          }))
+        })
+      })
+        .then(async res => {
+          const result = await res.json();
+          if (!res.ok) {
+            throw new Error(result.message || "Gagal menyimpan data pajak");
+          }
+          return result;
+        })
+        .then(result => {
+          showToast(result.message || "Data pajak berhasil disimpan.", "success");
+          importedPajakData = [];
+          const badge = document.getElementById("importBadgePajak");
+          if (badge) badge.hidden = true;
+          resetPajakDropzone();
+          populatePajakDusunFilter();
+          loadPajak(1);
+        })
+        .catch(error => {
+          console.error("Save pajak error:", error);
+          showToast(error.message || "Terjadi kesalahan saat menyimpan data pajak.", "error");
+        });
+    }
+  });
+}
+
+function resetPajakDropzone() {
+  const text = document.getElementById("dropzonePajakText");
+  const label = document.getElementById("dropzonePajakFile");
+  const input = document.getElementById("fileExcelPajak");
+  if (text) text.hidden = false;
+  if (label) label.hidden = true;
+  if (input) input.value = "";
+}
+
+function loadPajak(page = 1) {
+  currentPajakPage = page;
+
+  const tbody = document.querySelector("#tabelPajak tbody");
+  if (tbody) {
+    tbody.innerHTML = `
+      <tr class="skeleton-row"><td colspan="6"><span class="skeleton-bar"></span></td></tr>
+      <tr class="skeleton-row"><td colspan="6"><span class="skeleton-bar"></span></td></tr>
+      <tr class="skeleton-row"><td colspan="6"><span class="skeleton-bar"></span></td></tr>
+    `;
+  }
+
+  setText("tablePajakSubtitle", "Memuat data pajak…");
+
+  const params = new URLSearchParams({
+    page: currentPajakPage,
+    limit: PAJAK_LIMIT,
+    search: currentPajakSearch,
+    dusun: currentPajakDusun
+  });
+
+  fetch(`${API_URL}/pajak?${params.toString()}`)
+    .then(async res => {
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.message || "Gagal memuat data pajak");
+      }
+      return result;
+    })
+    .then(result => {
+      totalPajakPage = result.totalPage || 1;
+      totalPajakData = result.totalData || 0;
+
+      renderPajakTable(result.data || [], totalPajakData);
+      setPajakPaginationInfo(currentPajakPage, totalPajakPage);
+      updatePajakPaginationButtons();
+      togglePajakFilterResetButton();
+      setText("navPajakCount", Number(totalPajakData || 0).toLocaleString("id-ID"));
+    })
+    .catch(error => {
+      console.error("Load pajak error:", error);
+      if (tbody) {
+        tbody.innerHTML = `<tr><td colspan="6">${emptyState("Gagal memuat data pajak. Coba refresh kembali.")}</td></tr>`;
+      }
+      setText("tablePajakSubtitle", "Gagal memuat data pajak");
+      setText("navPajakCount", "0");
+      showToast(error.message || "Gagal memuat data pajak.", "error");
+    });
+}
+
+function renderPajakTable(data, total) {
+  const tbody = document.querySelector("#tabelPajak tbody");
+  if (!tbody) return;
+
+  tbody.innerHTML = "";
+
+  if (!Array.isArray(data) || data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6">${emptyState("Tidak ada data pajak ditemukan untuk filter ini.")}</td></tr>`;
+    setText(
+      "tablePajakSubtitle",
+      total ? "Tidak ada data pada halaman ini." : "Belum ada data pajak. Tambahkan manual atau import Excel."
+    );
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+
+  data.forEach((item, index) => {
+    const rowNumber = (currentPajakPage - 1) * PAJAK_LIMIT + index + 1;
+    const tr = document.createElement("tr");
+    tr.style.animationDelay = `${Math.min(index, 12) * 25}ms`;
+
+    tr.innerHTML = `
+      <td>${rowNumber}</td>
+      <td>${escapeHtml(item.nama) || "-"}</td>
+      <td>${escapeHtml(item.dusun) || "-"}</td>
+      <td>${escapeHtml(item.nop) || "-"}</td>
+      <td class="td-money">${formatRupiah(item.jumlah)}</td>
+      <td>
+        <div class="action-buttons">
+          <button class="btn-edit" type="button" title="Edit pajak" onclick="editPajak('${item.id}')">✎</button>
+          <button class="btn-delete" type="button" title="Hapus pajak" onclick="deletePajak('${item.id}', '${escapeJsString(item.nama || "")}')">×</button>
+        </div>
+      </td>
+    `;
+
+    fragment.appendChild(tr);
+  });
+
+  tbody.appendChild(fragment);
+
+  const filterNote = currentPajakSearch || currentPajakDusun ? " (terfilter)" : "";
+  setText("tablePajakSubtitle", `${Number(total || 0).toLocaleString("id-ID")} data pajak ditemukan${filterNote}`);
+}
+
+function populatePajakDusunFilter() {
+  fetch(`${API_URL}/pajak/dusun/list`)
+    .then(async res => {
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.message || "Gagal memuat daftar dusun pajak");
+      }
+      return result;
+    })
+    .then(data => {
+      const select = document.getElementById("filterPajakDusun");
+      if (!select || !Array.isArray(data)) return;
+
+      const currentValue = select.value;
+      select.innerHTML = `<option value="">Semua Dusun</option>`;
+
+      data.forEach(item => {
+        const option = document.createElement("option");
+        option.value = item;
+        option.textContent = item;
+        select.appendChild(option);
+      });
+
+      select.value = data.includes(currentValue) ? currentValue : "";
+    })
+    .catch(error => {
+      console.error("Load dusun pajak error:", error);
+    });
+}
+
+function openPajakModal() {
+  const form = document.getElementById("formPajak");
+  if (form) form.reset();
+  document.getElementById("modalPajakTitle").textContent = "Tambah Data Pajak";
+  document.getElementById("editPajakId").value = "";
+  openModal("modalPajakForm");
+}
+
+function editPajak(id) {
+  fetch(`${API_URL}/pajak/${id}`)
+    .then(async res => {
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.message || "Gagal mengambil data pajak");
+      }
+      return result;
+    })
+    .then(item => {
+      document.getElementById("modalPajakTitle").textContent = "Edit Data Pajak";
+      document.getElementById("editPajakId").value = item.id || "";
+      document.getElementById("pajakNama").value = item.nama || "";
+      document.getElementById("pajakDusun").value = item.dusun || "";
+      document.getElementById("pajakNop").value = item.nop || "";
+      document.getElementById("pajakJumlah").value = Number(item.jumlah || 0);
+      openModal("modalPajakForm");
+    })
+    .catch(error => {
+      console.error("Edit pajak error:", error);
+      showToast(error.message || "Gagal memuat data pajak.", "error");
+    });
+}
+
+function savePajak() {
+  const id = document.getElementById("editPajakId").value;
+  const nama = document.getElementById("pajakNama").value.trim();
+  const dusun = document.getElementById("pajakDusun").value.trim();
+  const nop = document.getElementById("pajakNop").value.trim();
+  const jumlah = normalizeCurrencyValue(document.getElementById("pajakJumlah").value);
+
+  if (!nama) {
+    showToast("Nama wajib diisi.", "error");
+    document.getElementById("pajakNama").focus();
+    return;
+  }
+
+  if (!dusun) {
+    showToast("Dusun wajib diisi.", "error");
+    document.getElementById("pajakDusun").focus();
+    return;
+  }
+
+  if (!nop) {
+    showToast("NOP wajib diisi.", "error");
+    document.getElementById("pajakNop").focus();
+    return;
+  }
+
+  const payload = { nama, dusun, nop, jumlah };
+  const method = id ? "PUT" : "POST";
+  const url = id ? `${API_URL}/pajak/${id}` : `${API_URL}/pajak`;
+
+  fetch(url, {
+    method,
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  })
+    .then(async res => {
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.message || "Gagal menyimpan data pajak");
+      }
+      return result;
+    })
+    .then(result => {
+      showToast(
+        result.message || (id ? "Data pajak berhasil diperbarui." : "Data pajak baru berhasil disimpan."),
+        "success"
+      );
+      closeModal("modalPajakForm");
+      populatePajakDusunFilter();
+      loadPajak(id ? currentPajakPage : 1);
+    })
+    .catch(error => {
+      console.error("Save pajak error:", error);
+      showToast(error.message || "Terjadi kesalahan saat menyimpan data pajak.", "error");
+    });
+}
+
+function deletePajak(id, nama) {
+  showConfirm({
+    title: "Hapus data pajak ini?",
+    message: nama ? `Data pajak milik "${nama}" akan dihapus.` : "Data pajak ini akan dihapus.",
+    confirmLabel: "Ya, Hapus",
+    danger: true,
+    onConfirm: () => {
+      fetch(`${API_URL}/pajak/${id}`, {
+        method: "DELETE"
+      })
+        .then(async res => {
+          const result = await res.json();
+          if (!res.ok) {
+            throw new Error(result.message || "Gagal menghapus data pajak");
+          }
+          return result;
+        })
+        .then(result => {
+          showToast(result.message || "Data pajak berhasil dihapus.", "success");
+          populatePajakDusunFilter();
+          loadPajak(1);
+        })
+        .catch(error => {
+          console.error("Delete pajak error:", error);
+          showToast(error.message || "Terjadi kesalahan saat menghapus data pajak.", "error");
+        });
+    }
+  });
+}
+
+function handlePajakSearch() {
+  const input = document.getElementById("searchPajakInput");
+  const clearBtn = document.getElementById("searchPajakClear");
+  const value = input ? input.value.trim() : "";
+
+  if (clearBtn) clearBtn.hidden = value.length === 0;
+
+  clearTimeout(pajakSearchDebounce);
+  pajakSearchDebounce = setTimeout(() => {
+    currentPajakSearch = value;
+    loadPajak(1);
+  }, 320);
+}
+
+function clearPajakSearch() {
+  const input = document.getElementById("searchPajakInput");
+  const clearBtn = document.getElementById("searchPajakClear");
+  if (input) input.value = "";
+  if (clearBtn) clearBtn.hidden = true;
+  currentPajakSearch = "";
+  loadPajak(1);
+}
+
+function handlePajakFilter() {
+  const dusun = document.getElementById("filterPajakDusun");
+  currentPajakDusun = dusun ? dusun.value : "";
+  loadPajak(1);
+}
+
+function resetPajakFilters() {
+  currentPajakSearch = "";
+  currentPajakDusun = "";
+
+  const search = document.getElementById("searchPajakInput");
+  const dusun = document.getElementById("filterPajakDusun");
+  const clearBtn = document.getElementById("searchPajakClear");
+
+  if (search) search.value = "";
+  if (dusun) dusun.value = "";
+  if (clearBtn) clearBtn.hidden = true;
+
+  loadPajak(1);
+}
+
+function togglePajakFilterResetButton() {
+  const btn = document.getElementById("filterPajakResetBtn");
+  if (!btn) return;
+  btn.hidden = !(currentPajakSearch || currentPajakDusun);
+}
+
+function changePajakPage(step) {
+  const nextPage = currentPajakPage + step;
+  if (nextPage < 1 || nextPage > totalPajakPage) return;
+  loadPajak(nextPage);
+}
+
+function setPajakPaginationInfo(page, total) {
+  const info = document.getElementById("pagePajakInfo");
+  if (info) {
+    info.textContent = `Halaman ${page} dari ${total}`;
+  }
+}
+
+function updatePajakPaginationButtons() {
+  const prev = document.getElementById("prevPajakPage");
+  const next = document.getElementById("nextPajakPage");
+
+  if (prev) prev.disabled = currentPajakPage <= 1;
+  if (next) next.disabled = currentPajakPage >= totalPajakPage;
+}
+
+function exportPajakExcel() {
+  window.open(`${API_URL}/pajak/export/excel`, "_blank");
+}
+
 function openModal(id) {
   const modal = document.getElementById(id);
   if (!modal) return;
@@ -1128,7 +1618,6 @@ function initModalDismiss() {
   });
 }
 
-/* ================= CONFIRM MODAL (pengganti window.confirm) ================= */
 function showConfirm({ title, message, confirmLabel, cancelLabel, danger, onConfirm }) {
   const modal = document.getElementById("confirmModal");
   if (!modal) {
@@ -1160,7 +1649,6 @@ function showConfirm({ title, message, confirmLabel, cancelLabel, danger, onConf
   openModal("confirmModal");
 }
 
-/* ================= TOAST (pengganti window.alert) ================= */
 function showToast(message, type) {
   const stack = document.getElementById("toastStack");
   if (!stack) {
@@ -1194,12 +1682,63 @@ function showToast(message, type) {
   setTimeout(remove, 4200);
 }
 
-/* ================= MISC ================= */
+function emptyState(message) {
+  return `
+    <div class="table-empty">
+      <svg viewBox="0 0 24 24" width="34" height="34" fill="none"><rect x="3.5" y="6" width="17" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 10h17" stroke="currentColor" stroke-width="1.6"/><path d="M8 4v4M16 4v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span>${message}</span>
+    </div>
+  `;
+}
+
+function escapeHtml(value) {
+  if (value === null || value === undefined) return "";
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function escapeJsString(value) {
+  return String(value || "")
+    .replace(/\\/g, "\\\\")
+    .replace(/'/g, "\\'")
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, " ")
+    .replace(/\r/g, " ");
+}
+
+function formatTTL(tempat, tanggal) {
+  if (!tempat && !tanggal) return "-";
+  if (!tanggal) return escapeHtml(tempat) || "-";
+
+  const date = new Date(tanggal);
+  const formatted = isNaN(date.getTime())
+    ? escapeHtml(tanggal)
+    : date.toLocaleDateString("id-ID", { day: "2-digit", month: "2-digit", year: "numeric" });
+
+  return `${escapeHtml(tempat) || "-"}, ${formatted}`;
+}
+
 function normalizeDateInput(value) {
   if (!value) return "";
   const date = new Date(value);
   if (isNaN(date.getTime())) return "";
   return date.toISOString().split("T")[0];
+}
+
+function normalizeCurrencyValue(value) {
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  const cleaned = String(value || "").replace(/[^\d,-]/g, "").replace(/\./g, "").replace(",", ".");
+  const parsed = Number(cleaned);
+  return Number.isFinite(parsed) ? Math.round(parsed) : 0;
+}
+
+function formatRupiah(value) {
+  const amount = Number(value || 0);
+  return `Rp ${amount.toLocaleString("id-ID")}`;
 }
 
 function logout() {
