@@ -2,16 +2,29 @@ name: Keep Supabase Alive
 
 on:
   schedule:
-    # Berjalan otomatis setiap hari ke-3 dan ke-6 setiap minggu jam 00:00 UTC
-    - cron: '0 0 * * 3,6'
-  workflow_dispatch: # Membuat tombol manual di GitHub untuk tes ping
+    # Setiap 6 jam
+    - cron: "0 */6 * * *"
+
+  workflow_dispatch:
 
 jobs:
-  ping:
+  keep-alive:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Send Ping to Supabase REST API
+      - name: Ping Supabase Database
         run: |
-          curl -i -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/" \
-          -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
-          -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"
+          echo "Pinging Supabase..."
+
+          curl --fail \
+            --silent \
+            --show-error \
+            --retry 5 \
+            --retry-delay 5 \
+            --connect-timeout 20 \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/keep_alive?select=id&limit=1" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"
+
+      - name: Done
+        run: echo "Supabase is alive."
